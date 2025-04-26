@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JSON Tools</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            line-height: 1.6;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .editor-section {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        #jsonInput {
+            width: 100%;
+            height: 200px;
+            padding: 10px;
+            border: 2px solid #ddd;
+            border-radius: 4px;
+            font-family: monospace;
+            margin-bottom: 10px;
+        }
+        
+        .button-group {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+        
+        button {
+            padding: 10px 20px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            transition: background-color 0.3s;
+        }
+        
+        button:hover {
+            background-color: #45a049;
+        }
+        
+        #treeView {
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+            margin-bottom: 20px;
+        }
+        
+        .ads-container {
+            display: flex;
+            justify-content: center;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+        
+        .ad-box {
+            width: 300px;
+            height: 250px;
+            background-color: #fff;
+            border: 1px solid #ddd;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            padding: 10px;
+        }
+        
+        .error {
+            color: red;
+            margin-top: 10px;
+        }
+        
+        .tree-node {
+            margin-left: 20px;
+            cursor: pointer;
+        }
+        
+        .tree-node::before {
+            content: '▶';
+            display: inline-block;
+            margin-right: 5px;
+            transition: transform 0.2s;
+        }
+        
+        .tree-node.collapsed::before {
+            transform: rotate(0deg);
+        }
+        
+        .tree-node.expanded::before {
+            transform: rotate(90deg);
+        }
+        
+        .children {
+            display: none;
+            margin-left: 20px;
+        }
+        
+        .expanded+.children {
+            display: block;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+            .editor-section,
+            #treeView {
+                padding: 15px;
+            }
+            .ad-box {
+                width: 100%;
+                height: auto;
+                min-height: 100px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="editor-section">
+            <h2>JSON Editor</h2>
+            <textarea id="jsonInput" placeholder="Enter JSON here..."></textarea>
+            <div class="button-group">
+                <button onclick="formatJSON()">Format JSON</button>
+                <button onclick="validateJSON()">Validate JSON</button>
+            </div>
+            <div id="errorMessage" class="error"></div>
+        </div>
+
+        <div id="treeView" style="display: none;">
+            <h2>JSON Tree View</h2>
+            <div id="treeContent"></div>
+        </div>
+
+        <div class="ads-container">
+
+            <div class="ads-container">
+                <div class="ad-box">Ad Space 1 (300x250)</div>
+                <div class="ad-box">Ad Space 2 (300x250)</div>
+            </div>
+        </div>
+
+        <script>
+            function formatJSON() {
+                const input = document.getElementById('jsonInput').value;
+                try {
+                    const obj = JSON.parse(input);
+                    const formatted = JSON.stringify(obj, null, 4);
+                    document.getElementById('jsonInput').value = formatted;
+                    showError('');
+                    generateTreeView(obj);
+                    document.getElementById('treeView').style.display = 'block';
+                } catch (e) {
+                    showError('Invalid JSON: ' + e.message);
+                    document.getElementById('treeView').style.display = 'none';
+                }
+            }
+
+            function validateJSON() {
+                const input = document.getElementById('jsonInput').value;
+                try {
+                    JSON.parse(input);
+                    showError('JSON is valid!');
+                } catch (e) {
+                    showError('Invalid JSON: ' + e.message);
+                }
+            }
+
+            function showError(message) {
+                const errorDiv = document.getElementById('errorMessage');
+                errorDiv.textContent = message;
+                errorDiv.style.color = message.startsWith('Invalid') ? 'red' : 'green';
+            }
+
+            function generateTreeView(obj) {
+                const treeContent = document.getElementById('treeContent');
+                treeContent.innerHTML = '';
+                treeContent.appendChild(createTreeElement(obj));
+            }
+
+            function generateTreeView(obj) {
+                const treeContent = document.getElementById('treeContent');
+                treeContent.innerHTML = '';
+                treeContent.appendChild(createTreeElement(obj));
+            }
+
+            function createTreeElement(data, isRoot = true) {
+                const container = document.createElement('div');
+
+                if (isRoot) {
+                    const type = Array.isArray(data) ? '[]' : '{}';
+                    const rootNode = createNode(type, data, true);
+                    container.appendChild(rootNode);
+                } else {
+                    if (typeof data === 'object' && data !== null) {
+                        const entries = Array.isArray(data) ? data.entries() : Object.entries(data);
+
+                        for (const [key, value] of entries) {
+                            const displayKey = Array.isArray(data) ? `[${key}]` : key;
+                            const node = createNode(displayKey, value);
+                            container.appendChild(node);
+                        }
+                    }
+                }
+
+                return container;
+            }
+
+            function createNode(key, value, isRoot = false) {
+                const node = document.createElement('div');
+                const isCollapsible = typeof value === 'object' && value !== null;
+                const type = Array.isArray(value) ? '[]' : typeof value === 'object' ? '{}' : '';
+
+                node.className = 'tree-node' + (isCollapsible ? ' collapsed' : '');
+
+                const content = document.createElement('span');
+                content.textContent = isRoot ? `${key} (${type})` : `${key}: `;
+
+                if (!isCollapsible && !isRoot) {
+                    const val = typeof value === 'string' ? `"${value}"` : value;
+                    content.textContent += val;
+                }
+
+                node.appendChild(content);
+
+                if (isCollapsible) {
+                    const children = document.createElement('div');
+                    children.className = 'children';
+                    children.appendChild(createTreeElement(value, false));
+                    node.appendChild(children);
+
+                    node.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        if (isCollapsible) {
+                            node.classList.toggle('collapsed');
+                            node.classList.toggle('expanded');
+                        }
+                    });
+                }
+
+                return node;
+            }
+
+
+            // Real-time validation
+            document.getElementById('jsonInput').addEventListener('keyup', () => {
+                try {
+                    JSON.parse(document.getElementById('jsonInput').value);
+                    document.getElementById('jsonInput').style.borderColor = '#4CAF50';
+                } catch (e) {
+                    document.getElementById('jsonInput').style.borderColor = 'red';
+                }
+            });
+        </script>
+
+        <script>
+            function generateTreeView(obj) {
+                const treeContent = document.getElementById('treeContent');
+                treeContent.innerHTML = '';
+                treeContent.appendChild(createTreeElement(obj));
+            }
+
+            function createTreeElement(data, isRoot = true) {
+                const container = document.createElement('div');
+
+                if (isRoot) {
+                    const type = getDataType(data);
+                    const rootNode = createNode(type, data, true);
+                    container.appendChild(rootNode);
+                } else {
+                    if (typeof data === 'object' && data !== null) {
+                        const entries = Array.isArray(data) ?
+                            data.map((item, index) => [index, item]) :
+                            Object.entries(data);
+
+                        for (const [key, value] of entries) {
+                            const displayKey = Array.isArray(data) ? `[${key}]` : `${key}`;
+                            const node = createNode(displayKey, value);
+                            container.appendChild(node);
+                        }
+                    }
+                }
+
+                return container;
+            }
+
+            function createNode(key, value, isRoot = false) {
+                const node = document.createElement('div');
+                const isCollapsible = typeof value === 'object' && value !== null;
+                const type = getDataType(value);
+
+                node.className = 'tree-node' + (isCollapsible ? ' expanded' : '');
+
+                const content = document.createElement('span');
+                let prefix = '';
+
+                if (isRoot) {
+                    prefix = `${type}`;
+                } else {
+                    prefix = `${key}: `;
+                    if (!isCollapsible) {
+                        prefix += formatValue(value);
+                    }
+                }
+
+                content.innerHTML = `
+            <span class="toggle">${isCollapsible ? '▼' : ''}</span>
+            <span class="content">${prefix}</span>
+        `;
+
+                node.appendChild(content);
+
+                if (isCollapsible) {
+                    const children = document.createElement('div');
+                    children.className = 'children';
+                    children.appendChild(createTreeElement(value, false));
+                    node.appendChild(children);
+
+                    content.querySelector('.toggle').addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        node.classList.toggle('collapsed');
+                        children.style.display = node.classList.contains('collapsed') ? 'none' : 'block';
+                        content.querySelector('.toggle').textContent = node.classList.contains('collapsed') ? '▶' : '▼';
+                    });
+                }
+
+                return node;
+            }
+
+            function getDataType(value) {
+                if (Array.isArray(value)) return '[...]';
+                if (typeof value === 'object' && value !== null) return '{...}';
+                return '';
+            }
+
+            function formatValue(value) {
+                if (typeof value === 'string') return `"${value}"`;
+                if (value === null) return 'null';
+                if (typeof value === 'undefined') return 'undefined';
+                return value;
+            }
+
+            // Update the CSS for the tree view
+            const style = document.createElement('style');
+            style.textContent = `
+    .tree-node {
+        margin-left: 15px;
+        cursor: pointer;
+        position: relative;
+    }
+    
+    .toggle {
+        color: #666;
+        margin-right: 5px;
+        display: inline-block;
+        width: 15px;
+    }
+    
+    .children {
+        margin-left: 20px;
+        display: block;
+    }
+    
+    .tree-node.collapsed .children {
+        display: none;
+    }
+    
+    .content {
+        font-family: monospace;
+    }
+    
+    .tree-node:hover {
+        background-color: #f5f5f5;
+    }
+    `;
+            document.head.appendChild(style);
+        </script>
+</body>
+
+</html>
