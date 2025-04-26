@@ -1,0 +1,295 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculators</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        
+        body {
+            background: #e0e0e0;
+            min-height: 100vh;
+            padding: 2rem 2rem 6rem;
+            /* Added bottom padding */
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .header {
+            text-align: center;
+            margin-bottom: 3rem;
+        }
+        
+        .title {
+            color: #333;
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .subtitle {
+            color: #666;
+            font-size: 1.1rem;
+        }
+        
+        .tools-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 2rem;
+            padding: 1rem;
+        }
+        
+        .tool-card {
+            background: #e0e0e0;
+            border-radius: 20px;
+            padding: 1.5rem;
+            text-align: center;
+            transition: transform 0.3s ease;
+            box-shadow: 20px 20px 60px #bebebe, -20px -20px 60px #ffffff;
+        }
+        
+        .tool-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .tool-image {
+            width: 100%;
+            height: 200px;
+            background: #e0e0e0;
+            border-radius: 15px;
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            box-shadow: inset 5px 5px 10px #bebebe, inset -5px -5px 10px #ffffff;
+        }
+        
+        .tool-image i {
+            font-size: 4rem;
+            color: #555;
+        }
+        
+        .tool-name {
+            font-size: 1.4rem;
+            color: #333;
+            margin-bottom: 0.5rem;
+        }
+        
+        .tool-subtitle {
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 1.5rem;
+            line-height: 1.4;
+        }
+        
+        .tool-button {
+            background: #e0e0e0;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 15px;
+            font-weight: 600;
+            color: #555;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 5px 5px 10px #bebebe, -5px -5px 10px #ffffff;
+        }
+        
+        .tool-button:hover {
+            box-shadow: inset 5px 5px 10px #bebebe, inset -5px -5px 10px #ffffff;
+        }
+        
+        .tool-button:active {
+            transform: scale(0.98);
+        }
+        
+        @media (max-width: 768px) {
+            .tools-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+        /* New Banner Ads Styles */
+        
+        .banner-left,
+        .banner-right {
+            position: fixed;
+            top: 0;
+            bottom: 0;
+            width: 120px;
+            background: #e0e0e0;
+            z-index: 1000;
+            box-shadow: 20px 20px 60px #bebebe, -20px -20px 60px #ffffff;
+            padding: 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .banner-left {
+            left: 0;
+            border-radius: 0 20px 20px 0;
+        }
+        
+        .banner-right {
+            right: 0;
+            border-radius: 20px 0 0 20px;
+        }
+        
+        .banner-bottom {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            height: 80px;
+            background: #e0e0e0;
+            z-index: 1000;
+            box-shadow: 0 -5px 10px rgba(0, 0, 0, 0.1);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 2rem;
+            padding: 0 2rem;
+        }
+        
+        .banner-content {
+            background: #e0e0e0;
+            padding: 1rem;
+            border-radius: 15px;
+            box-shadow: inset 5px 5px 10px #bebebe, inset -5px -5px 10px #ffffff;
+            text-align: center;
+        }
+        
+        .banner-vertical-text {
+            transform: rotate(-90deg);
+            white-space: nowrap;
+            color: #666;
+            font-weight: bold;
+        }
+        /* Adjust container for banners */
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            position: relative;
+            z-index: 1;
+        }
+        
+        @media (max-width: 1280px) {
+            .banner-left,
+            .banner-right {
+                display: none;
+            }
+            .container {
+                margin: 0 1rem;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .banner-bottom {
+                height: 60px;
+                font-size: 0.8rem;
+            }
+        }
+    </style>
+
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7966070414985050" crossorigin="anonymous"></script>
+
+</head>
+
+<body>
+    <!-- Side Banners -->
+    <!-- <div class="banner-left">
+
+    </div>
+
+    <div class="banner-right">
+
+    </div> -->
+
+    <!-- Bottom Banner -->
+    <!-- <div class="banner-bottom">
+
+    </div> -->
+
+    <div class="container">
+        <div class="header">
+            <h1 class="title">Calculators</h1>
+            <p class="subtitle">Discover our collection of intelligent solutions</p>
+        </div>
+
+        <div class="tools-grid">
+            <!-- Tool Card 1 -->
+            <div class="tool-card">
+                <div class="tool-image">
+                    <i class="fa fa-calculator"></i>
+                </div>
+                <h2 class="tool-name">Compound Interest Calculator</h2>
+                <p class="tool-subtitle">Helps calculate interest earned on investments over time</p>
+                <a href="cic_tool.html">
+                    <button class="tool-button">Explore Now</button></a>
+            </div>
+
+            <!-- Tool Card 2 -->
+            <div class="tool-card">
+                <div class="tool-image">
+                    <i class="fa fa-calculator"></i>
+                </div>
+                <h2 class="tool-name">Stock Profit & Loss Calculator </h2>
+                <p class="tool-subtitle">Determines profit/loss from stock trading</p>
+                <a href="stockprofitlosscacl.html"> <button class="tool-button">Explore Now</button></a>
+            </div>
+
+            <!-- Tool Card 3 -->
+            <div class="tool-card">
+                <div class="tool-image">
+                    <i class="fa fa-calculator"></i>
+                </div>
+                <h2 class="tool-name">Dividend Yield Calculator</h2>
+                <p class="tool-subtitle">Computes the dividend income from stocks</p>
+                <a href="dividentyieldcalc.html"><button class="tool-button">Explore Now</button></a>
+            </div>
+
+            <!-- Tool Card 4 -->
+            <div class="tool-card">
+                <div class="tool-image">
+                    <i class="fas fa-network-wired"></i>
+                </div>
+                <h2 class="tool-name">Neural Mapper</h2>
+                <p class="tool-subtitle">Deep learning architecture visualization tool</p>
+                <button class="tool-button">Explore Now</button>
+            </div>
+
+            <!-- Tool Card 5 -->
+            <div class="tool-card">
+                <div class="tool-image">
+                    <i class="fas fa-project-diagram"></i>
+                </div>
+                <h2 class="tool-name">Pattern Finder</h2>
+                <p class="tool-subtitle">Complex pattern detection across multiple datasets</p>
+                <button class="tool-button">Explore Now</button>
+            </div>
+
+            <!-- Tool Card 6 -->
+            <div class="tool-card">
+                <div class="tool-image">
+                    <i class="fas fa-microchip"></i>
+                </div>
+                <h2 class="tool-name">Neuro Chipset</h2>
+                <p class="tool-subtitle">Hardware optimization for neural networks</p>
+                <button class="tool-button">Explore Now</button>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

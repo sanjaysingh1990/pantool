@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Subway Runner</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <style>
+        body {
+            margin: 0;
+            overflow: hidden;
+            background: #222;
+            font-family: Arial, sans-serif;
+            touch-action: none;
+        }
+
+        #gameContainer {
+            width: 100vw;
+            height: 100vh;
+            perspective: 1000px;
+            overflow: hidden;
+        }
+
+        #track {
+            position: relative;
+            height: 100vh;
+            transform-style: preserve-3d;
+            transform: rotateX(60deg);
+            background: linear-gradient(#777 0%, #444 100%);
+        }
+
+        .lane {
+            position: absolute;
+            width: 33.33%;
+            height: 100%;
+            border-right: 2px dashed #fff;
+        }
+
+        #lane1 { left: 0; }
+        #lane2 { left: 33.33%; }
+        #lane3 { left: 66.66%; }
+
+        #player {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            bottom: 150px;
+            left: 50%;
+            transform: translateX(-50%);
+            transition: left 0.3s ease;
+            z-index: 2;
+        }
+
+        .obstacle {
+            position: absolute;
+            width: 50px;
+            height: 50px;
+            background: #c00;
+            bottom: 150px;
+        }
+
+        .coin {
+            position: absolute;
+            width: 20px;
+            height: 20px;
+            background: gold;
+            border-radius: 50%;
+            animation: float 2s infinite;
+        }
+
+        #hud {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            color: white;
+            font-size: 24px;
+            z-index: 3;
+        }
+
+        #gameOver {
+            display: none;
+            position: fixed;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: rgba(0,0,0,0.8);
+            color: white;
+            padding: 20px;
+            text-align: center;
+            z-index: 4;
+        }
+
+        @keyframes run {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-5px); }
+            100% { transform: translateY(0); }
+        }
+
+        @keyframes jump {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-100px); }
+            100% { transform: translateY(0); }
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0); }
+        }
+
+        @media (max-width: 600px) {
+            #player {
+                width: 30px;
+                height: 30px;
+            }
+            
+            .obstacle {
+                width: 30px;
+                height: 30px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div id="gameContainer">
+        <div id="hud">
+            Score: <span id="score">0</span><br>
+            Coins: <span id="coins">0</span>
+        </div>
+        <div id="track">
+            <div class="lane" id="lane1"></div>
+            <div class="lane" id="lane2"></div>
+            <div class="lane" id="lane3"></div>
+            <div id="player">🏃♂️</div>
+        </div>
+        <div id="gameOver">
+            <h2>Game Over!</h2>
+            <p>Final Score: <span id="finalScore">0</span></p>
+            <button onclick="startGame()">Play Again</button>
+        </div>
+    </div>
+
+    <script>
+        let currentLane = 2;
+        let isJumping = false;
+        let score = 0;
+        let coins = 0;
+        let gameSpeed = 5;
+        let gameActive = true;
+        let lanes = [document.getElementById('lane1'), document.getElementById('lane2'), document.getElementById('lane3')];
+
+        function startGame() {
+            gameActive = true;
+            score = 0;
+            coins = 0;
+            gameSpeed = 5;
+            document.getElementById('gameOver').style.display = 'none';
+            document.getElementById('player').style.bottom = '150px';
+            currentLane = 2;
+            updatePlayerPosition();
+            spawnObjects();
+            gameLoop();
+        }
+
+        function updatePlayerPosition() {
+            const player = document.getElementById('player');
+            player.style.left = `${(currentLane - 1) * 33.33 + 16.66}%`;
+        }
+
+        function spawnObjects() {
+            if (!gameActive) return;
+
+            // Spawn obstacles
+            if (Math.random() < 0.1) {
+                const lane = lanes[Math.floor(Math.random() * 3)];
+                const obstacle = document.createElement('div');
+                obstacle.className = 'obstacle';
+                obstacle.style.left = '35%';
+                obstacle.style.bottom = '-50px';
+                lane.appendChild(obstacle);
+            }
+
+            // Spawn coins
+            if (Math.random() < 0.2) {
+                const lane = lanes[Math.floor(Math.random() * 3)];
+                const coin = document.createElement('div');
+                coin.className = 'coin';
+                coin.style.left = `${Math.random() * 70 + 15}%`;
+                coin.style.bottom = '-20px';
+                lane.appendChild(coin);
+            }
+
+            setTimeout(spawnObjects, 1000 - gameSpeed * 50);
+        }
+
+        function gameLoop() {
+            if (!gameActive) return;
+
+            // Update score
+            score++;
+            document.getElementById('score').textContent = score;
+            
+            // Increase difficulty
+            if (score % 100 === 0) gameSpeed += 0.5;
+
+            // Move objects
+            lanes.forEach(lane => {
+                const objects = lane.querySelectorAll('.obstacle, .coin');
+                objects.forEach(obj => {
+                    const currentBottom = parseFloat(obj.style.bottom) || 0;
+                    obj.style.bottom = `${currentBottom + gameSpeed}px`;
+
+                    // Check collisions
+                    if (currentLane === Array.from(lanes).indexOf(lane) + 1) {
+                        const playerRect = document.getElementById('player').getBoundingClientRect();
+                        const objRect = obj.getBoundingClientRect();
+
+                        if (checkCollision(playerRect, objRect)) {
+                            if (obj.classList.contains('coin')) {
+                                coins++;
+                                document.getElementById('coins').textContent = coins;
+                                obj.remove();
+                            } else {
+                                gameOver();
+                            }
+                        }
+                    }
+
+                    // Remove off-screen objects
+                    if (currentBottom > window.innerHeight + 100) {
+                        obj.remove();
+                    }
+                });
+            });
+
+            requestAnimationFrame(gameLoop);
+        }
+
+        function checkCollision(rect1, rect2) {
+            return !(rect1.right < rect2.left || 
+                    rect1.left > rect2.right || 
+                    rect1.bottom < rect2.top || 
+                    rect1.top > rect2.bottom);
+        }
+
+        function gameOver() {
+            gameActive = false;
+            document.getElementById('gameOver').style.display = 'block';
+            document.getElementById('finalScore').textContent = score;
+        }
+
+        // Controls
+        document.addEventListener('keydown', (e) => {
+            if (!gameActive) return;
+
+            if (e.key === 'ArrowLeft' && currentLane > 1) {
+                currentLane--;
+                updatePlayerPosition();
+            }
+            if (e.key === 'ArrowRight' && currentLane < 3) {
+                currentLane++;
+                updatePlayerPosition();
+            }
+            if (e.key === 'ArrowUp' && !isJumping) {
+                jump();
+            }
+        });
+
+        // Touch controls
+        let touchStartX = 0;
+        document.addEventListener('touchstart', (e) => {
+            touchStartX = e.touches[0].clientX;
+        });
+
+        document.addEventListener('touchend', (e) => {
+            const touchEndX = e.changedTouches[0].clientX;
+            const deltaX = touchEndX - touchStartX;
+
+            if (Math.abs(deltaX) > 50) {
+                if (deltaX > 0 && currentLane < 3) {
+                    currentLane++;
+                } else if (deltaX < 0 && currentLane > 1) {
+                    currentLane--;
+                }
+                updatePlayerPosition();
+            } else if (!isJumping) {
+                jump();
+            }
+        });
+
+        function jump() {
+            isJumping = true;
+            const player = document.getElementById('player');
+            player.style.transition = 'transform 0.5s';
+            player.style.transform = 'translateY(-100px)';
+            
+            setTimeout(() => {
+                player.style.transform = 'translateY(0)';
+                isJumping = false;
+            }, 500);
+        }
+
+        // Start the game
+        startGame();
+    </script>
+</body>
+</html>

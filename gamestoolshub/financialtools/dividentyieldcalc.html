@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dividend Yield Calculator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background: #e0e5ec;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+        }
+        
+        .calculator {
+            background: #e0e5ec;
+            padding: 2rem;
+            border-radius: 2rem;
+            width: 100%;
+            max-width: 900px;
+            box-shadow: 20px 20px 60px #bebebe, -20px -20px 60px #ffffff;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 2rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .input-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .input-card {
+            background: #e0e5ec;
+            padding: 1.5rem;
+            border-radius: 1.5rem;
+            box-shadow: inset 5px 5px 10px #bebebe, inset -5px -5px 10px #ffffff;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+        
+        input,
+        select {
+            width: 100%;
+            padding: 0.8rem;
+            margin-bottom: 1rem;
+            border: none;
+            border-radius: 1rem;
+            background: #e0e5ec;
+            box-shadow: inset 3px 3px 6px #bebebe, inset -3px -3px 6px #ffffff;
+            color: #2c3e50;
+        }
+        
+        input:last-child,
+        select:last-child {
+            margin-bottom: 0;
+        }
+        
+        button {
+            background: #e0e5ec;
+            color: #2c3e50;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 1rem;
+            cursor: pointer;
+            box-shadow: 5px 5px 10px #bebebe, -5px -5px 10px #ffffff;
+            transition: all 0.3s ease;
+            display: block;
+            margin: 1rem auto;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .results {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .result-card {
+            background: #e0e5ec;
+            padding: 1.5rem;
+            border-radius: 1.5rem;
+            box-shadow: 5px 5px 10px #bebebe, -5px -5px 10px #ffffff;
+            text-align: center;
+        }
+        
+        .positive {
+            color: #27ae60;
+        }
+        
+        .tax-breakdown {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            border-radius: 1.5rem;
+            background: #e0e5ec;
+            box-shadow: inset 3px 3px 6px #bebebe, inset -3px -3px 6px #ffffff;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="calculator">
+        <h1>Dividend Yield Calculator (India)</h1>
+
+        <div class="input-group">
+            <div class="input-card">
+                <label>Number of Shares</label>
+                <input type="number" id="shares" placeholder="Total Shares">
+
+                <label>Face Value per Share (₹)</label>
+                <input type="number" id="faceValue" value="10">
+            </div>
+
+            <div class="input-card">
+                <label>Dividend Percentage (%)</label>
+                <input type="number" id="dividendPercent" placeholder="%">
+
+                <label>Holding Period</label>
+                <select id="holdingPeriod">
+                    <option value="long">Long Term (≥ 1 Year)</option>
+                    <option value="short">Short Term (< 1 Year)</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="input-group">
+            <div class="input-card">
+                <label>Your Tax Slab (%)</label>
+                <input type="number" id="taxSlab" value="30" step="5">
+
+                <label>TDS Rate (%)</label>
+                <input type="number" id="tdsRate" value="10" disabled>
+            </div>
+        </div>
+
+        <button onclick="calculateDividend()">Calculate</button>
+
+        <div class="results">
+            <div class="result-card">
+                <h3>Gross Dividend</h3>
+                <div id="grossDividend" class="positive">₹0.00</div>
+            </div>
+            <div class="result-card">
+                <h3>Total Tax Deducted</h3>
+                <div id="totalTax" class="negative">₹0.00</div>
+            </div>
+            <div class="result-card">
+                <h3>Net Dividend</h3>
+                <div id="netDividend" class="positive">₹0.00</div>
+            </div>
+        </div>
+
+        <div class="tax-breakdown">
+            <h3>Tax Breakdown</h3>
+            <div id="taxDetails">
+                <p>TDS Deducted: ₹0.00</p>
+                <p>Income Tax: ₹0.00</p>
+                <p>Education Cess: ₹0.00</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function calculateDividend() {
+            // Get input values
+            const shares = parseFloat(document.getElementById('shares').value);
+            const faceValue = parseFloat(document.getElementById('faceValue').value);
+            const dividendPercent = parseFloat(document.getElementById('dividendPercent').value);
+            const taxSlab = parseFloat(document.getElementById('taxSlab').value) / 100;
+            const tdsRate = 0.10; // Fixed 10% TDS
+
+            // Calculate dividend components
+            const grossDividend = shares * faceValue * (dividendPercent / 100);
+
+            // Calculate TDS
+            const tdsDeducted = grossDividend * tdsRate;
+            const amountAfterTDS = grossDividend - tdsDeducted;
+
+            // Calculate Income Tax
+            const incomeTax = amountAfterTDS * taxSlab;
+
+            // Calculate Education Cess (4% of income tax)
+            const cess = incomeTax * 0.04;
+
+            // Total Tax
+            const totalTax = tdsDeducted + incomeTax + cess;
+            const netDividend = grossDividend - totalTax;
+
+            // Update results
+            updateResult('grossDividend', grossDividend);
+            updateResult('totalTax', totalTax);
+            updateResult('netDividend', netDividend);
+
+            // Update tax breakdown
+            document.getElementById('taxDetails').innerHTML = `
+                <p>TDS Deducted: ₹${tdsDeducted.toFixed(2)}</p>
+                <p>Income Tax: ₹${incomeTax.toFixed(2)}</p>
+                <p>Education Cess: ₹${cess.toFixed(2)}</p>
+            `;
+        }
+
+        function updateResult(elementId, value) {
+            const element = document.getElementById(elementId);
+            element.textContent = `₹${Math.abs(value).toFixed(2)}`;
+            element.className = value >= 0 ? 'positive' : 'negative';
+        }
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,260 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Online Games Hub</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+        
+        html,
+        body {
+            height: 100%;
+            margin: 0;
+        }
+        
+        body {
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+        /* Header Styles */
+        
+        header {
+            background-color: #2c3e50;
+            color: white;
+            padding: 1rem;
+        }
+        
+        .nav-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .logo {
+            font-size: 1.5rem;
+            font-weight: bold;
+        }
+        
+        nav {
+            display: flex;
+            gap: 2rem;
+        }
+        
+        nav a {
+            color: white;
+            text-decoration: none;
+            font-size: 1.1rem;
+        }
+        
+        nav a:hover {
+            color: #3498db;
+        }
+        /* Mobile Menu */
+        
+        .menu-toggle {
+            display: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+        /* Games Grid */
+        
+        .games-container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            flex: 1;
+            /* Allows content to expand */
+        }
+        
+        .game-card {
+            background: #f5f5f5;
+            border-radius: 8px;
+            overflow: hidden;
+            transition: transform 0.3s;
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+        
+        .game-card:hover {
+            transform: translateY(-5px);
+        }
+        
+        .game-image {
+            width: 100%;
+            height: 150px;
+            object-fit: cover;
+            background-color: #ddd;
+        }
+        
+        .game-info {
+            padding: 1rem;
+        }
+        
+        .game-title {
+            font-size: 1.2rem;
+            margin-bottom: 0.5rem;
+        }
+        
+        .game-desc {
+            font-size: 0.9rem;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+        
+        .play-btn {
+            display: inline-block;
+            padding: 0.5rem 1rem;
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            border-radius: 4px;
+        }
+        
+        .play-btn:hover {
+            background: #2980b9;
+        }
+        /* Footer */
+        
+        footer {
+            background: #2c3e50;
+            color: white;
+            text-align: center;
+            padding: 1rem;
+            width: 100%;
+            position: fixed;
+            bottom: 0;
+            left: 0;
+        }
+        /* Responsive Design */
+        
+        @media (max-width: 768px) {
+            .nav-container {
+                flex-direction: column;
+                align-items: flex-start;
+            }
+            .menu-toggle {
+                display: block;
+            }
+            nav {
+                display: none;
+                width: 100%;
+                flex-direction: column;
+                gap: 1rem;
+                padding: 1rem 0;
+            }
+            nav.active {
+                display: flex;
+            }
+            .games-container {
+                grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+                padding-bottom: 4rem;
+                /* Adds space for fixed footer */
+            }
+        }
+    </style>
+
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7966070414985050" crossorigin="anonymous"></script>
+</head>
+
+<body>
+
+
+    <header>
+        <div class="nav-container">
+            <div class="logo">Games Hub</div>
+            <div class="menu-toggle">☰</div>
+            <nav>
+                <a href="index.html">Home</a>
+                <a href="toolsindex.html">All Calculators</a>
+                <a href="#">New Games</a>
+                <a href="#">Contact</a>
+            </nav>
+        </div>
+    </header>
+
+    <main>
+        <section class="games-container">
+            <div class="game-card">
+                <div class="game-image"></div>
+                <div class="game-info">
+                    <h2 class="game-title">Flappy Bird</h2>
+                    <p class="game-desc">Exciting action-packed adventure game</p>
+                    <a href="./games/flappybird.html" class="play-btn">Play Now</a>
+                </div>
+            </div>
+
+            <div class="game-card">
+                <div class="game-image"></div>
+                <div class="game-info">
+                    <h2 class="game-title">Puzzle Master 2048</h2>
+                    <p class="game-desc">Challenging mind-bending puzzles</p>
+                    <a href="./games/2048_games.html" class="play-btn">Play Now</a>
+                </div>
+            </div>
+
+            <div class="game-card">
+                <div class="game-image"></div>
+                <div class="game-info">
+                    <h2 class="game-title">Racing Rush</h2>
+                    <p class="game-desc">High-speed racing excitement</p>
+                    <a href="#" class="play-btn">Play Now</a>
+                </div>
+            </div>
+
+            <div class="game-card">
+                <div class="game-image"></div>
+                <div class="game-info">
+                    <h2 class="game-title">Strategy King</h2>
+                    <p class="game-desc">Test your strategic skills</p>
+                    <a href="./games/strategyking.html" class="play-btn">Play Now</a>
+                </div>
+            </div>
+
+            <div class="game-card">
+                <div class="game-image"></div>
+                <div class="game-info">
+                    <h2 class="game-title">Lumosity Puzzle</h2>
+                    <p class="game-desc">Test your strategic skills</p>
+                    <a href="./games/lumosity_puzzle.html" class="play-btn">Play Now</a>
+                </div>
+            </div>
+
+            <div class="game-card">
+                <div class="game-image"></div>
+                <div class="game-info">
+                    <h2 class="game-title">Elevate Puzzle</h2>
+                    <p class="game-desc">Test your strategic skills</p>
+                    <a href="./games/elevate_puzzle.html" class="play-btn">Play Now</a>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <footer>
+        <p>© 2025 Games Hub. All rights reserved.</p>
+    </footer>
+
+    <script>
+        // Mobile menu toggle
+        const menuToggle = document.querySelector('.menu-toggle');
+        const nav = document.querySelector('nav');
+
+        menuToggle.addEventListener('click', () => {
+            nav.classList.toggle('active');
+        });
+    </script>
+</body>
+
+</html>

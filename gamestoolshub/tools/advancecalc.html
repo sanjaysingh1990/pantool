@@ -1,0 +1,351 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroCalc - Advanced Scientific Calculator</title>
+    <style>
+         :root {
+            --primary-bg: rgba(255, 255, 255, 0.1);
+            --secondary-bg: rgba(255, 255, 255, 0.05);
+            --border-color: rgba(255, 255, 255, 0.2);
+            --text-color: #ffffff;
+            --shadow: 0 8px 32px rgba(0, 0, 0, 0.37);
+            --transition: all 0.3s ease;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', sans-serif;
+        }
+        
+        body {
+            min-height: 100vh;
+            background: linear-gradient(45deg, #2b2b2b, #1a1a1a);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: var(--text-color);
+        }
+        
+        .calculator {
+            background: var(--primary-bg);
+            backdrop-filter: blur(16px);
+            border-radius: 20px;
+            padding: 2rem;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border-color);
+            width: 90%;
+            max-width: 500px;
+        }
+        
+        .display {
+            background: var(--secondary-bg);
+            padding: 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            text-align: right;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        #history {
+            font-size: 0.9rem;
+            opacity: 0.7;
+            min-height: 20px;
+        }
+        
+        #result {
+            font-size: 2.5rem;
+            width: 100%;
+            background: transparent;
+            border: none;
+            color: var(--text-color);
+            text-align: right;
+            outline: none;
+            caret-color: transparent;
+        }
+        
+        .buttons {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0.8rem;
+        }
+        
+        button {
+            padding: 1rem;
+            border: none;
+            background: var(--secondary-bg);
+            color: var(--text-color);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: var(--transition);
+            backdrop-filter: blur(5px);
+            border: 1px solid var(--border-color);
+        }
+        
+        button:hover {
+            background: rgba(255, 255, 255, 0.15);
+            transform: translateY(-2px);
+        }
+        
+        button:active {
+            transform: translateY(0);
+        }
+        
+        .operator {
+            background: rgba(255, 165, 0, 0.15);
+        }
+        
+        .scientific {
+            background: rgba(0, 255, 165, 0.1);
+        }
+        
+        .memory {
+            background: rgba(255, 51, 153, 0.1);
+        }
+        
+        .theme-toggle {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            padding: 0.5rem 1rem;
+        }
+        
+        .error {
+            color: #ff4444;
+            position: absolute;
+            bottom: 5px;
+            left: 10px;
+            font-size: 0.8rem;
+        }
+        
+        @media (max-width: 480px) {
+            .buttons {
+                grid-template-columns: repeat(4, 1fr);
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <button class="theme-toggle" onclick="toggleTheme()">🌓</button>
+    <div class="calculator">
+        <div class="display">
+            <div id="history"></div>
+            <input type="text" id="result" value="0" spellcheck="false">
+            <div class="error" id="error"></div>
+        </div>
+        <div class="buttons">
+            <!-- Scientific Functions -->
+            <button class="scientific" onclick="addToDisplay('sin(')">sin</button>
+            <button class="scientific" onclick="addToDisplay('cos(')">cos</button>
+            <button class="scientific" onclick="addToDisplay('tan(')">tan</button>
+            <button class="scientific" onclick="addToDisplay('log(')">log</button>
+            <button class="scientific" onclick="addToDisplay('ln(')">ln</button>
+
+            <!-- Memory Functions -->
+            <button class="memory" onclick="memoryClear()">MC</button>
+            <button class="memory" onclick="memoryRecall()">MR</button>
+            <button class="memory" onclick="memoryAdd()">M+</button>
+            <button class="memory" onclick="memorySubtract()">M-</button>
+            <button class="memory" onclick="memoryStore()">MS</button>
+
+            <!-- Basic Operations -->
+            <button class="operator" onclick="addToDisplay('+')">+</button>
+            <button class="operator" onclick="addToDisplay('-')">-</button>
+            <button class="operator" onclick="addToDisplay('*')">×</button>
+            <button class="operator" onclick="addToDisplay('/')">÷</button>
+            <button class="operator" onclick="addToDisplay('^')">^</button>
+
+            <!-- Numbers and Constants -->
+            <button onclick="addToDisplay('7')">7</button>
+            <button onclick="addToDisplay('8')">8</button>
+            <button onclick="addToDisplay('9')">9</button>
+            <button onclick="addToDisplay('(')">(</button>
+            <button onclick="addToDisplay(')')">)</button>
+
+            <button onclick="addToDisplay('4')">4</button>
+            <button onclick="addToDisplay('5')">5</button>
+            <button onclick="addToDisplay('6')">6</button>
+            <button onclick="addToDisplay('π')">π</button>
+            <button onclick="addToDisplay('e')">e</button>
+
+            <button onclick="addToDisplay('1')">1</button>
+            <button onclick="addToDisplay('2')">2</button>
+            <button onclick="addToDisplay('3')">3</button>
+            <button onclick="addToDisplay('.')">.</button>
+            <button onclick="clearDisplay()">C</button>
+
+            <button onclick="addToDisplay('0')">0</button>
+            <button onclick="addToDisplay('00')">00</button>
+            <button onclick="calculate()">=</button>
+            <button onclick="backspace()">⌫</button>
+            <button onclick="toggleSign()">±</button>
+
+            <!-- Advanced Functions -->
+            <button onclick="addToDisplay('sqrt(')">√</button>
+            <button onclick="addToDisplay('abs(')">|x|</button>
+            <button onclick="addToDisplay('fact(')">n!</button>
+            <button onclick="convertUnit('deg')">DEG</button>
+            <button onclick="convertUnit('rad')">RAD</button>
+        </div>
+    </div>
+
+    <script>
+        let memory = 0;
+        let isDarkTheme = true;
+        let currentUnit = 'deg';
+        const resultInput = document.getElementById('result');
+
+        // Keyboard input handling
+        document.addEventListener('keydown', handleKeyInput);
+        document.querySelector('.calculator').addEventListener('click', () => resultInput.focus());
+
+        function handleKeyInput(e) {
+            const key = e.key.toLowerCase();
+
+            if (key >= '0' && key <= '9' || ['+', '-', '*', '/', '.', '^'].includes(key)) {
+                addToDisplay(key);
+                e.preventDefault();
+            } else if (key === '(' || key === ')') {
+                addToDisplay(key);
+                e.preventDefault();
+            } else if (key === 'enter') {
+                calculate();
+                e.preventDefault();
+            } else if (key === 'backspace') {
+                backspace();
+                e.preventDefault();
+            } else if (key === 'escape') {
+                clearDisplay();
+                e.preventDefault();
+            } else if (key === 'p') {
+                addToDisplay('π');
+                e.preventDefault();
+            } else if (key === 'e') {
+                addToDisplay('e');
+                e.preventDefault();
+            } else if (key === 's') {
+                addToDisplay('sin(');
+                e.preventDefault();
+            } else if (key === 'c') {
+                addToDisplay('cos(');
+                e.preventDefault();
+            } else if (key === 't') {
+                addToDisplay('tan(');
+                e.preventDefault();
+            }
+        }
+
+        function addToDisplay(value) {
+            if (resultInput.value === '0' && value !== '.') {
+                resultInput.value = value;
+            } else {
+                resultInput.value += value;
+            }
+        }
+
+        function calculate() {
+            try {
+                let expression = resultInput.value
+                    .replace(/π/g, Math.PI)
+                    .replace(/e/g, Math.E)
+                    .replace(/√/g, 'sqrt')
+                    .replace(/\^/g, '**')
+                    .replace(/sin/g, currentUnit === 'deg' ? 'sinDeg' : 'Math.sin')
+                    .replace(/cos/g, currentUnit === 'deg' ? 'cosDeg' : 'Math.cos')
+                    .replace(/tan/g, currentUnit === 'deg' ? 'tanDeg' : 'Math.tan');
+
+                expression = expression.replace(/fact\(/g, 'factorial(');
+
+                const result = evaluateExpression(expression);
+                document.getElementById('history').innerText = resultInput.value;
+                resultInput.value = result;
+            } catch (error) {
+                showError('Invalid expression');
+            }
+        }
+
+        function evaluateExpression(expr) {
+            const factorial = (n) => n <= 1 ? 1 : n * factorial(n - 1);
+            const sinDeg = (degrees) => Math.sin(degrees * Math.PI / 180);
+            const cosDeg = (degrees) => Math.cos(degrees * Math.PI / 180);
+            const tanDeg = (degrees) => Math.tan(degrees * Math.PI / 180);
+
+            return Function(`'use strict'; 
+                const sqrt = Math.sqrt;
+                const log = Math.log10;
+                const ln = Math.log;
+                const abs = Math.abs;
+                return ${expr};`)();
+        }
+
+        // Memory Functions
+        function memoryStore() {
+            memory = parseFloat(resultInput.value);
+        }
+
+        function memoryRecall() {
+            addToDisplay(memory.toString());
+        }
+
+        function memoryClear() {
+            memory = 0;
+        }
+
+        function memoryAdd() {
+            memory += parseFloat(resultInput.value);
+        }
+
+        function memorySubtract() {
+            memory -= parseFloat(resultInput.value);
+        }
+
+        // Utility Functions
+        function clearDisplay() {
+            resultInput.value = '0';
+        }
+
+        function backspace() {
+            resultInput.value = resultInput.value.slice(0, -1) || '0';
+        }
+
+        function toggleSign() {
+            resultInput.value = resultInput.value.startsWith('-') ?
+                resultInput.value.slice(1) : `-${resultInput.value}`;
+        }
+
+        function convertUnit(unit) {
+            currentUnit = unit;
+            showError(`Switched to ${unit.toUpperCase()}`, 1000);
+        }
+
+        // Theme Management
+        function toggleTheme() {
+            isDarkTheme = !isDarkTheme;
+            if (!isDarkTheme) {
+                document.documentElement.style.setProperty('--primary-bg', 'rgba(0, 0, 0, 0.1)');
+                document.documentElement.style.setProperty('--secondary-bg', 'rgba(0, 0, 0, 0.05)');
+                document.documentElement.style.setProperty('--text-color', '#000000');
+                document.body.style.background = 'linear-gradient(45deg, #f0f0f0, #ffffff)';
+            } else {
+                document.documentElement.style.setProperty('--primary-bg', 'rgba(255, 255, 255, 0.1)');
+                document.documentElement.style.setProperty('--secondary-bg', 'rgba(255, 255, 255, 0.05)');
+                document.documentElement.style.setProperty('--text-color', '#ffffff');
+                document.body.style.background = 'linear-gradient(45deg, #2b2b2b, #1a1a1a)';
+            }
+        }
+
+        function showError(message, duration = 2000) {
+            const errorElement = document.getElementById('error');
+            errorElement.innerText = message;
+            setTimeout(() => errorElement.innerText = '', duration);
+        }
+    </script>
+</body>
+
+</html>

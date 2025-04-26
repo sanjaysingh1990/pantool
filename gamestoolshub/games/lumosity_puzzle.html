@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BrainBoost - Cognitive Training</title>
+    <style>
+         :root {
+            --primary: #4A90E2;
+            --secondary: #50E3C2;
+            --background: #F5F7FA;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Arial', sans-serif;
+        }
+        
+        body {
+            background: var(--background);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .game-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .game-card {
+            background: white;
+            border-radius: 15px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+        }
+        
+        .memory-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .memory-tile {
+            width: 100%;
+            aspect-ratio: 1;
+            background: var(--primary);
+            border-radius: 8px;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        .memory-tile.active {
+            background: var(--secondary);
+            transform: scale(0.95);
+        }
+        
+        .math-problem {
+            font-size: 2.5em;
+            margin: 20px 0;
+            color: var(--primary);
+        }
+        
+        input[type="number"] {
+            font-size: 1.2em;
+            padding: 10px;
+            width: 120px;
+            margin: 10px;
+            border: 2px solid var(--primary);
+            border-radius: 5px;
+        }
+        
+        button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1.1em;
+            transition: transform 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .dashboard {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-top: 30px;
+            display: flex;
+            justify-content: space-around;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .stat-box {
+            text-align: center;
+        }
+        
+        @media (max-width: 600px) {
+            .memory-grid {
+                grid-template-columns: repeat(3, 1fr);
+            }
+            .math-problem {
+                font-size: 1.8em;
+            }
+        }
+    </style>
+
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7966070414985050" crossorigin="anonymous"></script>
+
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>BrainBoost 🧠</h1>
+            <p>Daily Cognitive Training Exercises</p>
+        </header>
+
+        <div class="game-container">
+            <div class="game-card" id="memory-game">
+                <h2>Memory Matrix</h2>
+                <div class="memory-grid" id="memoryGrid"></div>
+                <p>Level: <span id="currentLevel">1</span></p>
+            </div>
+
+            <div class="game-card" id="math-game">
+                <h2>Speed Math</h2>
+                <div class="math-problem" id="mathProblem"></div>
+                <input type="number" id="mathAnswer" placeholder="Answer">
+                <button onclick="checkMathAnswer()">Check</button>
+                <p>Time Left: <span id="timer">30</span>s</p>
+            </div>
+        </div>
+
+        <div class="dashboard">
+            <div class="stat-box">
+                <h3>🏆 Score</h3>
+                <p id="totalScore">0</p>
+            </div>
+            <div class="stat-box">
+                <h3>✅ Correct</h3>
+                <p id="correctAnswers">0</p>
+            </div>
+            <div class="stat-box">
+                <h3>⏳ Streak</h3>
+                <p id="currentStreak">0</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Embedded SVG Graphics -->
+    <svg style="display:none;">
+        <symbol id="brain-icon" viewBox="0 0 24 24">
+            <path fill="currentColor" d="M12 2C8.69 2 6 4.69 6 8c0 2.5 1.34 3.34 2.25 4.5C7 14 6 16 6 17.5V20h12v-2.5c0-1.5-1-3.5-2.25-5C18 11.34 19.31 10.5 19.31 8c0-3.31-2.69-6-6-6m-2 17v-2H8v-1.5c0-1.93 2-3.5 4-5 2 1.5 4 3.07 4 5V17h-2v2h-4z"/>
+        </symbol>
+    </svg>
+
+    <!-- Embedded Audio -->
+    <audio id="correctSound" src="data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//uQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAHAAABcACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//sQBAAP8AAAaQAAAAgAAA0gAAABAAABpAAAACAAADSAAAAE5hdmFob3kgUmluZwA4Q1N4AAAAHAAABcAAAABkYXRh4IkAAAAA"></audio>
+    <audio id="wrongSound" src="data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//uQBAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAHAAABcACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//sQBAAP8AAAaQAAAAgAAA0gAAABAAABpAAAACAAADSAAAAE5hdmFob3kgUmluZwA4Q1N4AAAAHAAABcAAAABkYXRh4IkAAAAA"></audio>
+
+    <script>
+        // Memory Game Logic
+        let currentSequence = [];
+        let userSequence = [];
+        let level = 1;
+        let score = 0;
+        let correctAnswers = 0;
+        let streak = 0;
+
+        function createMemoryGrid() {
+            const grid = document.getElementById('memoryGrid');
+            grid.innerHTML = '';
+            const size = Math.min(level + 2, 6);
+
+            grid.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+
+            for (let i = 0; i < size * size; i++) {
+                const tile = document.createElement('div');
+                tile.className = 'memory-tile';
+                tile.addEventListener('click', handleTileClick);
+                grid.appendChild(tile);
+            }
+
+            setTimeout(generateNewSequence, 1000);
+        }
+
+        function generateNewSequence() {
+            currentSequence = [];
+            userSequence = [];
+            const tiles = document.querySelectorAll('.memory-tile');
+
+            for (let i = 0; i < level; i++) {
+                const randomIndex = Math.floor(Math.random() * tiles.length);
+                currentSequence.push(randomIndex);
+            }
+
+            showSequence();
+        }
+
+        function showSequence() {
+            const tiles = document.querySelectorAll('.memory-tile');
+            currentSequence.forEach((index, i) => {
+                setTimeout(() => {
+                    tiles[index].classList.add('active');
+                    setTimeout(() => tiles[index].classList.remove('active'), 500);
+                }, i * 1000);
+            });
+        }
+
+        function handleTileClick(e) {
+            const index = Array.from(e.target.parentNode.children).indexOf(e.target);
+            userSequence.push(index);
+
+            if (userSequence.length === currentSequence.length) {
+                if (JSON.stringify(userSequence) === JSON.stringify(currentSequence)) {
+                    handleCorrectAnswer();
+                } else {
+                    handleWrongAnswer();
+                }
+            }
+        }
+
+        // Math Game Logic
+        let currentProblem = null;
+        let timeLeft = 30;
+        let timerId = null;
+
+        function generateMathProblem() {
+            const operations = ['+', '-', '*'];
+            const operation = operations[Math.floor(Math.random() * operations.length)];
+            const a = Math.floor(Math.random() * 10) + 1;
+            const b = Math.floor(Math.random() * 10) + 1;
+
+            currentProblem = {
+                a,
+                b,
+                operation
+            };
+            document.getElementById('mathProblem').textContent =
+                `${a} ${operation} ${b} = ?`;
+        }
+
+        function checkMathAnswer() {
+            const userAnswer = parseInt(document.getElementById('mathAnswer').value);
+            let correctAnswer;
+
+            switch (currentProblem.operation) {
+                case '+':
+                    correctAnswer = currentProblem.a + currentProblem.b;
+                    break;
+                case '-':
+                    correctAnswer = currentProblem.a - currentProblem.b;
+                    break;
+                case '*':
+                    correctAnswer = currentProblem.a * currentProblem.b;
+                    break;
+            }
+
+            if (userAnswer === correctAnswer) {
+                handleCorrectAnswer();
+            } else {
+                handleWrongAnswer();
+            }
+
+            document.getElementById('mathAnswer').value = '';
+            generateMathProblem();
+        }
+
+        // Common Game Functions
+        function handleCorrectAnswer() {
+            score += 10 * level;
+            correctAnswers++;
+            streak++;
+            document.getElementById('correctSound').play();
+            updateDashboard();
+
+            if (streak % 3 === 0) level++;
+            document.getElementById('currentLevel').textContent = level;
+
+            createMemoryGrid();
+        }
+
+        function handleWrongAnswer() {
+            streak = 0;
+            document.getElementById('wrongSound').play();
+            if (score > 0) score = Math.floor(score * 0.8);
+            updateDashboard();
+            createMemoryGrid();
+        }
+
+        function updateDashboard() {
+            document.getElementById('totalScore').textContent = score;
+            document.getElementById('correctAnswers').textContent = correctAnswers;
+            document.getElementById('currentStreak').textContent = streak;
+        }
+
+        // Timer System
+        function startTimer() {
+            timerId = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timer').textContent = timeLeft;
+                if (timeLeft <= 0) {
+                    clearInterval(timerId);
+                    handleWrongAnswer();
+                    timeLeft = 30;
+                    startTimer();
+                }
+            }, 1000);
+        }
+
+        // Initialize Games
+        function init() {
+            createMemoryGrid();
+            generateMathProblem();
+            startTimer();
+        }
+
+        init();
+    </script>
+</body>
+
+</html>

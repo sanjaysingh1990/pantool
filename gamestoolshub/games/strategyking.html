@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Strategy King - Empire Conquest Game</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            background: #1a1a1a;
+            color: #fff;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px;
+            background: #2a2a2a;
+            margin-bottom: 20px;
+        }
+        
+        .game-panels {
+            display: grid;
+            grid-template-columns: 2fr 1fr;
+            gap: 20px;
+        }
+        
+        .game-board {
+            display: grid;
+            grid-template-columns: repeat(10, 1fr);
+            gap: 2px;
+            background: #333;
+            padding: 5px;
+            border-radius: 5px;
+        }
+        
+        .cell {
+            aspect-ratio: 1;
+            background: #444;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 12px;
+        }
+        
+        .cell:hover {
+            filter: brightness(1.2);
+        }
+        
+        .terrain-plains {
+            background: #6a994e;
+        }
+        
+        .terrain-forest {
+            background: #386641;
+        }
+        
+        .terrain-mountain {
+            background: #6c584c;
+        }
+        
+        .terrain-water {
+            background: #0077b6;
+        }
+        
+        .throne {
+            background: #d90429 !important;
+        }
+        
+        .unit {
+            width: 80%;
+            height: 80%;
+            border-radius: 50%;
+            border: 2px solid #000;
+        }
+        
+        .player1 {
+            background: #ff595e;
+        }
+        
+        .player2 {
+            background: #4cc9f0;
+        }
+        
+        .resources-panel {
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        
+        .actions-panel {
+            margin-top: 20px;
+            background: #2a2a2a;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        
+        button {
+            background: #4CAF50;
+            border: none;
+            color: white;
+            padding: 10px 20px;
+            margin: 5px;
+            cursor: pointer;
+            border-radius: 3px;
+        }
+        
+        button:hover {
+            background: #45a049;
+        }
+        
+        @media (max-width: 768px) {
+            .game-panels {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7966070414985050" crossorigin="anonymous"></script>
+
+</head>
+
+<body>
+    <header>
+        <h1>Strategy King</h1>
+        <p>Conquer the kingdom!</p>
+    </header>
+
+    <div class="container">
+        <div class="resources-panel">
+            <h3>Resources</h3>
+            <p>Gold: <span id="gold">100</span></p>
+            <p>Food: <span id="food">50</span></p>
+            <p>Current Player: <span id="current-player">Player 1</span></p>
+        </div>
+
+        <div class="game-panels">
+            <div class="game-board" id="game-board"></div>
+            <div class="actions-panel">
+                <h3>Actions</h3>
+                <button onclick="game.recruitUnit('knight')">Recruit Knight (50g)</button>
+                <button onclick="game.recruitUnit('archer')">Recruit Archer (30g)</button>
+                <button onclick="game.recruitUnit('settler')">Recruit Settler (20g)</button>
+                <button onclick="game.endTurn()">End Turn</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        class StrategyGame {
+            constructor() {
+                this.players = {
+                    1: {
+                        gold: 100,
+                        food: 50,
+                        units: []
+                    },
+                    2: {
+                        gold: 100,
+                        food: 50,
+                        units: []
+                    }
+                };
+                this.currentPlayer = 1;
+                this.selectedUnit = null;
+                this.boardSize = 10;
+                this.initBoard();
+            }
+
+            initBoard() {
+                const board = document.getElementById('game-board');
+                board.innerHTML = '';
+
+                for (let y = 0; y < this.boardSize; y++) {
+                    for (let x = 0; x < this.boardSize; x++) {
+                        const cell = document.createElement('div');
+                        cell.className = 'cell terrain-plains';
+                        cell.dataset.x = x;
+                        cell.dataset.y = y;
+
+                        // Add throne cells
+                        if ((x === 0 && y === 0) || (x === 9 && y === 9)) {
+                            cell.classList.add('throne');
+                        }
+
+                        cell.addEventListener('click', (e) => this.handleCellClick(e));
+                        board.appendChild(cell);
+                    }
+                }
+            }
+
+            handleCellClick(event) {
+                const x = parseInt(event.target.dataset.x);
+                const y = parseInt(event.target.dataset.y);
+
+                if (this.selectedUnit) {
+                    this.moveUnit(x, y);
+                } else {
+                    this.selectUnit(x, y);
+                }
+            }
+
+            selectUnit(x, y) {
+                const unit = this.getUnitAt(x, y);
+                if (unit && unit.player === this.currentPlayer) {
+                    this.selectedUnit = unit;
+                    this.highlightMovement(unit);
+                }
+            }
+
+            moveUnit(x, y) {
+                const unit = this.selectedUnit;
+                const distance = Math.abs(x - unit.x) + Math.abs(y - unit.y);
+
+                if (distance <= unit.movement) {
+                    unit.x = x;
+                    unit.y = y;
+                    this.selectedUnit = null;
+                    this.updateBoard();
+                    this.checkVictoryCondition();
+                }
+            }
+
+            recruitUnit(type) {
+                const costs = {
+                    knight: {
+                        gold: 50,
+                        food: 20
+                    },
+                    archer: {
+                        gold: 30,
+                        food: 15
+                    },
+                    settler: {
+                        gold: 20,
+                        food: 10
+                    }
+                };
+
+                const cost = costs[type];
+                const player = this.players[this.currentPlayer];
+
+                if (player.gold >= cost.gold && player.food >= cost.food) {
+                    player.gold -= cost.gold;
+                    player.food -= cost.food;
+
+                    const unit = {
+                        type,
+                        player: this.currentPlayer,
+                        x: this.currentPlayer === 1 ? 0 : 9,
+                        y: this.currentPlayer === 1 ? 0 : 9,
+                        movement: type === 'knight' ? 3 : type === 'archer' ? 2 : 1
+                    };
+
+                    player.units.push(unit);
+                    this.updateBoard();
+                    this.updateResources();
+                }
+            }
+
+            endTurn() {
+                this.currentPlayer = this.currentPlayer === 1 ? 2 : 1;
+                this.selectedUnit = null;
+                document.getElementById('current-player').textContent = `Player ${this.currentPlayer}`;
+            }
+
+            updateBoard() {
+                const cells = document.getElementsByClassName('cell');
+                for (let cell of cells) {
+                    cell.innerHTML = '';
+                }
+
+                for (let player of[1, 2]) {
+                    this.players[player].units.forEach(unit => {
+                        const cell = this.getCellAt(unit.x, unit.y);
+                        const unitElement = document.createElement('div');
+                        unitElement.className = `unit player${unit.player}`;
+                        cell.appendChild(unitElement);
+                    });
+                }
+            }
+
+            updateResources() {
+                const player = this.players[this.currentPlayer];
+                document.getElementById('gold').textContent = player.gold;
+                document.getElementById('food').textContent = player.food;
+            }
+
+            checkVictoryCondition() {
+                const throneCell = document.querySelector('.throne');
+                const unit = this.getUnitAt(
+                    parseInt(throneCell.dataset.x),
+                    parseInt(throneCell.dataset.y)
+                );
+
+                if (unit) {
+                    alert(`Player ${unit.player} wins!`);
+                    location.reload();
+                }
+            }
+
+            getCellAt(x, y) {
+                return document.querySelector(`[data-x="${x}"][data-y="${y}"]`);
+            }
+
+            getUnitAt(x, y) {
+                return this.players[this.currentPlayer].units.find(u => u.x === x && u.y === y);
+            }
+
+            highlightMovement(unit) {
+                // Implementation for movement highlighting
+            }
+        }
+
+        const game = new StrategyGame();
+        game.updateBoard();
+    </script>
+</body>
+
+</html>

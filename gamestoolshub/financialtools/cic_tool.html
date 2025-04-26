@@ -1,0 +1,441 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Advanced Compound Interest Calculator</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background: linear-gradient(145deg, #e0e5ec, #f0f5fa);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+        }
+        
+        .calculator {
+            background: #e0e5ec;
+            padding: 2.5rem;
+            border-radius: 2.5rem;
+            width: 100%;
+            max-width: 900px;
+            margin-bottom: 2rem;
+            box-shadow: 20px 20px 60px #bebebe, -20px -20px 60px #ffffff;
+            transition: transform 0.3s ease;
+        }
+        
+        .calculator:hover {
+            transform: translateY(-5px);
+        }
+        
+        h1 {
+            color: #4a5568;
+            margin-bottom: 2rem;
+            text-align: center;
+            font-weight: 600;
+            font-size: 2.2rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .input-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 1.8rem;
+            margin-bottom: 2.5rem;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.8rem;
+            color: #4a5568;
+            font-weight: 500;
+            font-size: 1.1rem;
+        }
+        
+        input,
+        select {
+            width: 100%;
+            padding: 1.1rem;
+            border: none;
+            border-radius: 1.2rem;
+            font-size: 1rem;
+            background: #e0e5ec;
+            box-shadow: inset 5px 5px 10px #bebebe, inset -5px -5px 10px #ffffff;
+            color: #4a5568;
+            transition: all 0.3s ease;
+        }
+        
+        input:focus,
+        select:focus {
+            outline: none;
+            box-shadow: inset 3px 3px 6px #bebebe, inset -3px -3px 6px #ffffff;
+        }
+        
+        button {
+            background: linear-gradient(145deg, #e0e5ec, #f0f5fa);
+            color: #4a5568;
+            border: none;
+            padding: 1.2rem 2.5rem;
+            border-radius: 1.2rem;
+            cursor: pointer;
+            font-size: 1.1rem;
+            font-weight: 600;
+            box-shadow: 6px 6px 12px #bebebe, -6px -6px 12px #ffffff;
+            transition: all 0.3s ease;
+            margin: 1.5rem 0;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        button:hover {
+            transform: scale(1.05);
+            box-shadow: 8px 8px 16px #bebebe, -8px -8px 16px #ffffff;
+        }
+        
+        button:active {
+            box-shadow: inset 6px 6px 12px #bebebe, inset -6px -6px 12px #ffffff;
+        }
+        
+        .results {
+            margin-top: 2.5rem;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+            gap: 2rem;
+        }
+        
+        .result-card {
+            background: #e0e5ec;
+            padding: 1.8rem;
+            border-radius: 1.5rem;
+            text-align: center;
+            box-shadow: 8px 8px 16px #bebebe, -8px -8px 16px #ffffff;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+        
+        .result-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 10px 10px 20px #bebebe, -10px -10px 20px #ffffff;
+        }
+        
+        .result-value {
+            font-size: 1.8rem;
+            font-weight: 600;
+            color: #48bb78;
+            margin: 1rem 0;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .chart-container {
+            width: 100%;
+            max-width: 900px;
+            margin-top: 2.5rem;
+            background: #e0e5ec;
+            padding: 2rem;
+            border-radius: 2.5rem;
+            box-shadow: 20px 20px 60px #bebebe, -20px -20px 60px #ffffff;
+            position: relative;
+        }
+        
+        .loader {
+            display: none;
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 40px;
+            height: 40px;
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #48bb78;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+            z-index: 100;
+        }
+        
+        @keyframes spin {
+            0% {
+                transform: rotate(0deg);
+            }
+            100% {
+                transform: rotate(360deg);
+            }
+        }
+        
+        .touch-feedback {
+            position: absolute;
+            background: rgba(255, 255, 255, 0.3);
+            border-radius: 50%;
+            transform: scale(0);
+            animation: ripple 0.6s linear;
+        }
+        
+        @keyframes ripple {
+            to {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            .calculator {
+                padding: 1.5rem;
+                border-radius: 1.5rem;
+            }
+            button {
+                width: 100%;
+                margin: 1rem 0;
+            }
+        }
+    </style>
+
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7966070414985050" crossorigin="anonymous"></script>
+
+</head>
+
+<body>
+    <div class="calculator">
+        <h1>₹ Compound Interest Calculator</h1>
+
+        <div class="input-group">
+            <div>
+                <label for="principal">Initial Investment (₹)</label>
+                <input type="number" id="principal" min="0" value="100000">
+            </div>
+            <div>
+                <label for="rate">Annual Interest Rate (%)</label>
+                <input type="number" id="rate" min="0" step="0.1" value="7.5">
+            </div>
+            <div>
+                <label for="years">Investment Period (years)</label>
+                <input type="number" id="years" min="1" value="10">
+            </div>
+            <div>
+                <label for="compound">Compound Frequency</label>
+                <select id="compound">
+                    <option value="1">Annually</option>
+                    <option value="12">Monthly</option>
+                    <option value="4">Quarterly</option>
+                    <option value="365">Daily</option>
+                </select>
+            </div>
+        </div>
+
+        <div style="text-align: center; position: relative;">
+            <div class="loader" id="loader"></div>
+            <button onclick="calculate()" id="calculateBtn">
+                Calculate Growth
+            </button>
+        </div>
+
+        <div class="results">
+            <div class="result-card">
+                <div>Total Invested</div>
+                <div class="result-value" id="totalInvested">₹0.00</div>
+            </div>
+            <div class="result-card">
+                <div>Total Interest</div>
+                <div class="result-value" id="totalInterest">₹0.00</div>
+            </div>
+            <div class="result-card">
+                <div>Final Amount</div>
+                <div class="result-value" id="finalAmount">₹0.00</div>
+            </div>
+        </div>
+    </div>
+
+    <div class="chart-container">
+        <canvas id="growthChart"></canvas>
+    </div>
+
+    <script>
+        let myChart = null;
+        let isCalculating = false;
+
+        function showLoader() {
+            document.getElementById('loader').style.display = 'block';
+            isCalculating = true;
+        }
+
+        function hideLoader() {
+            document.getElementById('loader').style.display = 'none';
+            isCalculating = false;
+        }
+
+        function createRipple(event) {
+            const btn = event.currentTarget;
+            const ripple = document.createElement('div');
+            ripple.className = 'touch-feedback';
+            const rect = btn.getBoundingClientRect();
+            ripple.style.width = ripple.style.height = Math.max(rect.width, rect.height) + 'px';
+            ripple.style.left = event.clientX - rect.left - ripple.offsetWidth / 2 + 'px';
+            ripple.style.top = event.clientY - rect.top - ripple.offsetHeight / 2 + 'px';
+            btn.appendChild(ripple);
+            setTimeout(() => ripple.remove(), 600);
+        }
+
+        async function calculate() {
+            if (isCalculating) return;
+
+            showLoader();
+
+            // Add artificial delay for loader demonstration
+            await new Promise(resolve => setTimeout(resolve, 500));
+
+            // Calculation logic
+            const principal = parseFloat(document.getElementById('principal').value);
+            const rate = parseFloat(document.getElementById('rate').value) / 100;
+            const years = parseInt(document.getElementById('years').value);
+            const compoundFreq = parseInt(document.getElementById('compound').value);
+
+            // Validation
+            if (isNaN(principal)) {
+                alert('Please enter a valid principal amount');
+                hideLoader();
+                return;
+            }
+
+            // Calculate compound interest
+            const totalPeriods = years * compoundFreq;
+            const ratePerPeriod = rate / compoundFreq;
+            const finalAmount = principal * Math.pow(1 + ratePerPeriod, totalPeriods);
+            const totalInterest = finalAmount - principal;
+
+            // Update results
+            document.getElementById('totalInvested').textContent =
+                `₹${principal.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+            document.getElementById('totalInterest').textContent =
+                `₹${totalInterest.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+            document.getElementById('finalAmount').textContent =
+                `₹${finalAmount.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+
+            // Generate growth data
+            const growthData = [];
+            let currentAmount = principal;
+
+            for (let year = 1; year <= years; year++) {
+                currentAmount = currentAmount * Math.pow(1 + ratePerPeriod, compoundFreq);
+                growthData.push({
+                    year,
+                    amount: currentAmount
+                });
+            }
+
+            updateChart(growthData);
+            hideLoader();
+        }
+
+        function updateChart(data) {
+            const ctx = document.getElementById('growthChart').getContext('2d');
+
+            if (myChart) {
+                myChart.destroy();
+            }
+
+            myChart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: data.map(d => `Year ${d.year}`),
+                    datasets: [{
+                        label: 'Investment Growth',
+                        data: data.map(d => d.amount),
+                        borderColor: '#48bb78',
+                        backgroundColor: 'rgba(72, 187, 120, 0.1)',
+                        borderWidth: 3,
+                        pointRadius: 4,
+                        tension: 0.1,
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                font: {
+                                    size: 14,
+                                    family: 'Poppins'
+                                }
+                            }
+                        },
+                        tooltip: {
+                            backgroundColor: '#e0e5ec',
+                            titleColor: '#4a5568',
+                            bodyColor: '#4a5568',
+                            borderColor: '#48bb78',
+                            borderWidth: 1,
+                            bodyFont: {
+                                family: 'Poppins',
+                                size: 14
+                            },
+                            callbacks: {
+                                label: (context) => {
+                                    const value = context.parsed.y;
+                                    return ` Year ${context.label}: ₹${value.toLocaleString('en-IN', { maximumFractionDigits: 2 })}`;
+                                }
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            title: {
+                                display: true,
+                                text: 'Amount (₹)',
+                                font: {
+                                    family: 'Poppins',
+                                    size: 14
+                                }
+                            },
+                            ticks: {
+                                callback: (value) => `₹${value.toLocaleString('en-IN')}`,
+                                font: {
+                                    family: 'Poppins'
+                                }
+                            },
+                            grid: {
+                                color: 'rgba(0,0,0,0.05)'
+                            }
+                        },
+                        x: {
+                            title: {
+                                display: true,
+                                text: 'Years',
+                                font: {
+                                    family: 'Poppins',
+                                    size: 14
+                                }
+                            },
+                            grid: {
+                                display: false
+                            },
+                            ticks: {
+                                font: {
+                                    family: 'Poppins'
+                                }
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        // Event Listeners
+        document.getElementById('calculateBtn').addEventListener('touchstart', createRipple);
+        document.getElementById('calculateBtn').addEventListener('mousedown', createRipple);
+
+        // Initial calculation
+        calculate();
+    </script>
+</body>
+
+</html>

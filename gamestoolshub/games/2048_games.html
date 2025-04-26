@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>2048 Complete</title>
+    <style>
+        /* Add these new styles */
+        
+        .ad-container {
+            position: fixed;
+            top: 50%;
+            transform: translateY(-50%);
+            width: 160px;
+            background: #f0f0f0;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 1;
+        }
+        
+        #left-ad {
+            left: 20px;
+        }
+        
+        #right-ad {
+            right: 20px;
+        }
+        
+        .game-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            padding: 20px 0;
+        }
+        
+        @media (max-width: 1300px) {
+            .ad-container {
+                display: none;
+            }
+            .game-container {
+                width: 95%;
+                padding: 0 10px;
+            }
+        }
+        /* Add merge animation */
+        
+        @keyframes merge {
+            0% {
+                transform: scale(0.9);
+            }
+            50% {
+                transform: scale(1.1);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        
+        .merge-animation {
+            animation: merge 0.3s ease;
+        }
+        /* Base cell styling */
+        
+        .cell {
+            background: rgba(238, 228, 218, 0.35);
+            color: #776e65;
+            /* ... other existing cell styles ... */
+        }
+        /* Color schemes for different grid sizes */
+        
+        #grid[data-grid-size="2"] {
+            --color-2: #8ECAE6;
+            --color-4: #219EBC;
+            --color-8: #023047;
+            --color-16: #FFB703;
+            --color-32: #FB8500;
+        }
+        
+        #grid[data-grid-size="3"] {
+            --color-2: #CCE3DE;
+            --color-4: #A4C3B2;
+            --color-8: #6B9080;
+            --color-16: #EAF4F4;
+            --color-32: #F6FFF8;
+        }
+        
+        #grid[data-grid-size="4"] {
+            --color-2: #eee4da;
+            --color-4: #ede0c8;
+            --color-8: #f2b179;
+            --color-16: #f59563;
+            --color-32: #f67c5f;
+        }
+        
+        #grid[data-grid-size="6"] {
+            --color-2: #E0BBE4;
+            --color-4: #957DAD;
+            --color-8: #D291BC;
+            --color-16: #FEC8D8;
+            --color-32: #FFDFD3;
+        }
+        
+        #grid[data-grid-size="8"] {
+            --color-2: #FFADAD;
+            --color-4: #FFD6A5;
+            --color-8: #FDFFB6;
+            --color-16: #CAFFBF;
+            --color-32: #9BF6FF;
+        }
+        /* Tile color assignments */
+        
+        #grid[data-grid-size="2"] [data-value="2"] {
+            background: var(--color-2);
+        }
+        
+        #grid[data-grid-size="2"] [data-value="4"] {
+            background: var(--color-4);
+        }
+        
+        #grid[data-grid-size="2"] [data-value="8"] {
+            background: var(--color-8);
+            color: white;
+        }
+        
+        #grid[data-grid-size="2"] [data-value="16"] {
+            background: var(--color-16);
+            color: white;
+        }
+        
+        #grid[data-grid-size="2"] [data-value="32"] {
+            background: var(--color-32);
+            color: white;
+        }
+        
+        #grid[data-grid-size="3"] [data-value="2"] {
+            background: var(--color-2);
+        }
+        
+        #grid[data-grid-size="3"] [data-value="4"] {
+            background: var(--color-4);
+        }
+        
+        #grid[data-grid-size="3"] [data-value="8"] {
+            background: var(--color-8);
+            color: white;
+        }
+        
+        #grid[data-grid-size="3"] [data-value="16"] {
+            background: var(--color-16);
+        }
+        
+        #grid[data-grid-size="3"] [data-value="32"] {
+            background: var(--color-32);
+        }
+        
+        #grid[data-grid-size="4"] [data-value="2"] {
+            background: var(--color-2);
+        }
+        
+        #grid[data-grid-size="4"] [data-value="4"] {
+            background: var(--color-4);
+        }
+        
+        #grid[data-grid-size="4"] [data-value="8"] {
+            background: var(--color-8);
+            color: white;
+        }
+        
+        #grid[data-grid-size="4"] [data-value="16"] {
+            background: var(--color-16);
+            color: white;
+        }
+        
+        #grid[data-grid-size="4"] [data-value="32"] {
+            background: var(--color-32);
+            color: white;
+        }
+        
+        #grid[data-grid-size="6"] [data-value="2"] {
+            background: var(--color-2);
+        }
+        
+        #grid[data-grid-size="6"] [data-value="4"] {
+            background: var(--color-4);
+        }
+        
+        #grid[data-grid-size="6"] [data-value="8"] {
+            background: var(--color-8);
+            color: white;
+        }
+        
+        #grid[data-grid-size="6"] [data-value="16"] {
+            background: var(--color-16);
+        }
+        
+        #grid[data-grid-size="6"] [data-value="32"] {
+            background: var(--color-32);
+        }
+        
+        #grid[data-grid-size="8"] [data-value="2"] {
+            background: var(--color-2);
+        }
+        
+        #grid[data-grid-size="8"] [data-value="4"] {
+            background: var(--color-4);
+        }
+        
+        #grid[data-grid-size="8"] [data-value="8"] {
+            background: var(--color-8);
+        }
+        
+        #grid[data-grid-size="8"] [data-value="16"] {
+            background: var(--color-16);
+        }
+        
+        #grid[data-grid-size="8"] [data-value="32"] {
+            background: var(--color-32);
+        }
+        
+         :root {
+            --cell-size: 15vmin;
+            --grid-gap: 2vmin;
+        }
+        /* Size adjustments for larger grids */
+        
+        #grid[data-grid-size="6"] {
+            --cell-size: 10vmin;
+            --grid-gap: 1vmin;
+        }
+        
+        #grid[data-grid-size="8"] {
+            --cell-size: 8vmin;
+            --grid-gap: 1vmin;
+        }
+        
+        @media (max-width: 600px) {
+            /* Mobile adjustments for larger grids */
+            #grid[data-grid-size="6"] {
+                --cell-size: 8vmin;
+                --grid-gap: 0.8vmin;
+            }
+            #grid[data-grid-size="8"] {
+                --cell-size: 6vmin;
+                --grid-gap: 0.6vmin;
+            }
+            /* Smaller text for mobile */
+            #grid[data-grid-size="6"] .cell,
+            #grid[data-grid-size="8"] .cell {
+                font-size: calc(var(--cell-size) * 0.35);
+            }
+        }
+        
+         :root {
+            --cell-size: 15vmin;
+            --grid-gap: 2vmin;
+        }
+        
+        body {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-family: Arial, sans-serif;
+            background: #faf8ef;
+            touch-action: none;
+            margin: 0;
+            min-height: 100vh;
+        }
+        
+        #grid {
+            display: grid;
+            gap: var(--grid-gap);
+            padding: var(--grid-gap);
+            background: #bbada0;
+            border-radius: 6px;
+            box-shadow: 0 0 30px 0 rgba(0, 0, 0, 0.1);
+            aspect-ratio: 1/1;
+            width: calc(var(--cell-size) * var(--grid-size) + var(--grid-gap) * (var(--grid-size) + 1));
+            max-width: 95vw;
+            position: relative;
+        }
+        
+        .cell {
+            width: var(--cell-size);
+            height: var(--cell-size);
+            background: rgba(238, 228, 218, 0.35);
+            border-radius: 3px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-weight: bold;
+            color: #776e65;
+            font-size: calc(var(--cell-size) * 0.4);
+            transition: all 0.15s ease;
+        }
+        
+        .controls {
+            margin: 20px;
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            justify-content: center;
+        }
+        
+        button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 3px;
+            background: #8f7a66;
+            color: white;
+            cursor: pointer;
+            font-size: 1.1rem;
+        }
+        
+        #score-container {
+            display: flex;
+            gap: 2rem;
+            margin: 20px;
+            font-size: 1.5rem;
+            color: #776e65;
+        }
+        
+        .game-over {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.8);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            font-size: 3rem;
+            font-weight: bold;
+            color: #776e65;
+            animation: appear 0.5s ease;
+        }
+        
+        @keyframes appear {
+            from {
+                opacity: 0;
+                transform: scale(0.5);
+            }
+            to {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        @media (max-width: 600px) {
+             :root {
+                --cell-size: 18vmin;
+            }
+            button {
+                padding: 8px 16px;
+                font-size: 1rem;
+            }
+            #score-container {
+                font-size: 1.2rem;
+            }
+        }
+        /* Tile colors */
+        
+        [data-value="2"] {
+            background: #eee4da;
+        }
+        
+        [data-value="4"] {
+            background: #ede0c8;
+        }
+        
+        [data-value="8"] {
+            background: #f2b179;
+            color: white;
+        }
+        
+        [data-value="16"] {
+            background: #f59563;
+            color: white;
+        }
+        
+        [data-value="32"] {
+            background: #f67c5f;
+            color: white;
+        }
+        
+        [data-value="64"] {
+            background: #f65e3b;
+            color: white;
+        }
+        
+        [data-value="128"] {
+            background: #edcf72;
+            color: white;
+        }
+        
+        [data-value="256"] {
+            background: #edcc61;
+            color: white;
+        }
+        
+        [data-value="512"] {
+            background: #edc850;
+            color: white;
+        }
+        
+        [data-value="1024"] {
+            background: #edc53f;
+            color: white;
+        }
+        
+        [data-value="2048"] {
+            background: #edc22e;
+            color: white;
+        }
+        
+        .game-over {
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(255, 255, 255, 0.9);
+            display: none;
+            justify-content: center;
+            align-items: center;
+            flex-direction: column;
+            gap: 20px;
+            animation: appear 0.5s ease forwards, pulse 2s infinite;
+            z-index: 2;
+        }
+        
+        .game-over-content {
+            text-align: center;
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+        
+        .game-over-message {
+            font-size: 3rem;
+            font-weight: bold;
+            color: #776e65;
+            margin-bottom: 20px;
+        }
+        
+        @keyframes pulse {
+            0% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.05);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
+        
+        .share-btn {
+            background: #4CAF50;
+        }
+        
+        .play-again-btn {
+            background: #8f7a66;
+        }
+        
+        @media (max-width: 600px) {
+             :root {
+                --cell-size: 18vmin;
+            }
+            /* Adjust cell size for different grid sizes on mobile */
+            [data-grid-size="2"] {
+                --cell-size: 25vmin;
+            }
+            [data-grid-size="6"] {
+                --cell-size: 12vmin;
+            }
+            [data-grid-size="8"] {
+                --cell-size: 9vmin;
+            }
+            button {
+                padding: 8px 16px;
+                font-size: 1rem;
+            }
+            #score-container {
+                font-size: 1.2rem;
+            }
+        }
+    </style>
+
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7966070414985050" crossorigin="anonymous"></script>
+
+</head>
+
+<body>
+
+    <!-- Add ad containers inside a main container -->
+    <div class="main-container">
+        <div class="ad-container" id="left-ad">
+            <!-- Left Ad -->
+            <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7966070414985050" crossorigin="anonymous"></script>
+            <!-- 2048 game vertical ads -->
+            <ins class="adsbygoogle" style="display:inline-block;width:160px;height:600px" data-ad-client="ca-pub-7966070414985050" data-ad-slot="8759355673" data-ad-format="auto" data-full-width-responsive="true"></ins>
+            <script>
+                (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
+        </div>
+
+        <div class="game-container">
+            <!-- Existing game content -->
+            <div class="controls">
+                <button onclick="initGame(2)">2x2</button>
+                <button onclick="initGame(3)">3x3</button>
+                <button onclick="initGame(4)">4x4</button>
+                <button onclick="initGame(6)">6x6</button>
+                <button onclick="initGame(8)">8x8</button>
+            </div>
+            <div id="score-container">
+                <div id="score">Score: 0</div>
+                <div id="highscore">High Score: 0</div>
+            </div>
+            <div id="grid">
+                <div class="game-over" id="game-over">
+                    <div class="game-over-content">
+                        <div class="game-over-message"></div>
+                        <button class="play-again-btn" onclick="initGame(gridSize)">Play Again</button>
+                        <button class="share-btn" onclick="shareScore()">Share Score</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="ad-container" id="right-ad">
+            <!-- Right Ad -->
+            <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7966070414985050" crossorigin="anonymous"></script>
+            <!-- 2048 game vertical ads -->
+            <ins class="adsbygoogle" style="display:inline-block;width:160px;height:600px" data-ad-client="ca-pub-7966070414985050" data-ad-slot="8759355673" data-ad-format="auto" data-full-width-responsive="true"></ins>
+            <script>
+                (adsbygoogle = window.adsbygoogle || []).push({});
+            </script>
+        </div>
+    </div>
+
+
+    <script>
+        let grid = [];
+        let gridSize = 4;
+        let score = 0;
+        let highScore = localStorage.getItem('2048-highscore') || 0;
+        let touchStartX = 0;
+        let touchStartY = 0;
+
+        function initGame(size) {
+            gridSize = size;
+            grid = Array(size).fill().map(() => Array(size).fill(0));
+            score = 0;
+            updateScore(0);
+
+            const gridContainer = document.getElementById('grid');
+            const gameOverElement = document.getElementById('game-over');
+
+            // Set grid size attribute for responsive adjustments
+            gridContainer.setAttribute('data-grid-size', size.toString());
+
+            // Preserve game-over element when clearing grid
+            const cells = gridContainer.querySelectorAll('.cell');
+            cells.forEach(cell => cell.remove());
+
+            gridContainer.style.setProperty('--grid-size', size.toString());
+            gridContainer.style.gridTemplateColumns = `repeat(${size}, 1fr)`;
+            gridContainer.style.gridTemplateRows = `repeat(${size}, 1fr)`;
+
+            for (let i = 0; i < size * size; i++) {
+                const cell = document.createElement('div');
+                cell.className = 'cell';
+                gridContainer.appendChild(cell);
+            }
+
+            document.getElementById('highscore').textContent = `High Score: ${highScore}`;
+            gameOverElement.style.display = 'none';
+            addNewTile();
+            addNewTile();
+            updateDisplay();
+        }
+
+        function addNewTile() {
+            const emptyCells = [];
+            for (let i = 0; i < gridSize; i++) {
+                for (let j = 0; j < gridSize; j++) {
+                    if (grid[i][j] === 0) emptyCells.push({
+                        i,
+                        j
+                    });
+                }
+            }
+
+            if (emptyCells.length > 0) {
+                const {
+                    i,
+                    j
+                } = emptyCells[Math.floor(Math.random() * emptyCells.length)];
+                grid[i][j] = Math.random() < 0.9 ? 2 : 4;
+            }
+        }
+
+        function updateDisplay() {
+            const cells = document.getElementsByClassName('cell');
+            for (let i = 0; i < gridSize; i++) {
+                for (let j = 0; j < gridSize; j++) {
+                    const idx = i * gridSize + j;
+                    cells[idx].textContent = grid[i][j] || '';
+                    cells[idx].setAttribute('data-value', grid[i][j]);
+                }
+            }
+        }
+
+        function updateScore(points) {
+            score += points;
+            document.getElementById('score').textContent = `Score: ${score}`;
+            if (score > highScore) {
+                highScore = score;
+                localStorage.setItem('2048-highscore', highScore);
+                document.getElementById('highscore').textContent = `High Score: ${highScore}`;
+            }
+        }
+
+        function move(direction) {
+            let moved = false;
+            const oldGrid = JSON.stringify(grid);
+            let mergedCells = [];
+
+            switch (direction) {
+                case 'left':
+                    const resLeft = moveHorizontal(true);
+                    moved = resLeft.moved;
+                    mergedCells = resLeft.mergedCells;
+                    break;
+                case 'right':
+                    const resRight = moveHorizontal(false);
+                    moved = resRight.moved;
+                    mergedCells = resRight.mergedCells;
+                    break;
+                case 'up':
+                    const resUp = moveVertical(true);
+                    moved = resUp.moved;
+                    mergedCells = resUp.mergedCells;
+                    break;
+                case 'down':
+                    const resDown = moveVertical(false);
+                    moved = resDown.moved;
+                    mergedCells = resDown.mergedCells;
+                    break;
+            }
+
+            if (moved) {
+                addNewTile();
+                updateDisplay();
+                // Apply merge animations
+                mergedCells.forEach(({
+                    i,
+                    j
+                }) => {
+                    const cellIndex = i * gridSize + j;
+                    const cell = document.getElementsByClassName('cell')[cellIndex];
+                    cell.classList.add('merge-animation');
+                    setTimeout(() => cell.classList.remove('merge-animation'), 300);
+                });
+                checkGameState();
+            }
+        }
+
+        function moveHorizontal(left) {
+            let moved = false;
+            const mergedCells = [];
+            for (let i = 0; i < gridSize; i++) {
+                let row = grid[i].filter(x => x !== 0);
+                for (let j = 0; j < row.length - 1; j++) {
+                    if (row[j] === row[j + 1]) {
+                        const mergedValue = row[j] * 2;
+                        updateScore(mergedValue);
+                        row[j] = mergedValue;
+                        row.splice(j + 1, 1);
+                        moved = true;
+                        // Calculate position in grid
+                        const newRowLength = row.length;
+                        const newJ = left ? j : (gridSize - newRowLength + j);
+                        mergedCells.push({
+                            i,
+                            j: newJ
+                        });
+                    }
+                }
+                const newRow = left ?
+                    row.concat(Array(gridSize - row.length).fill(0)) :
+                    Array(gridSize - row.length).fill(0).concat(row);
+                if (JSON.stringify(grid[i]) !== JSON.stringify(newRow)) moved = true;
+                grid[i] = newRow;
+            }
+            return {
+                moved,
+                mergedCells
+            };
+        }
+
+        function moveVertical(up) {
+            let moved = false;
+            const mergedCells = [];
+            for (let j = 0; j < gridSize; j++) {
+                let column = [];
+                for (let i = 0; i < gridSize; i++) column.push(grid[i][j]);
+                column = column.filter(x => x !== 0);
+                for (let i = 0; i < column.length - 1; i++) {
+                    if (column[i] === column[i + 1]) {
+                        const mergedValue = column[i] * 2;
+                        updateScore(mergedValue);
+                        column[i] = mergedValue;
+                        column.splice(i + 1, 1);
+                        moved = true;
+                        // Calculate position in grid
+                        const newColumnLength = column.length;
+                        const newI = up ? i : (gridSize - newColumnLength + i);
+                        mergedCells.push({
+                            i: newI,
+                            j
+                        });
+                    }
+                }
+                const newColumn = up ?
+                    column.concat(Array(gridSize - column.length).fill(0)) :
+                    Array(gridSize - column.length).fill(0).concat(column);
+                if (JSON.stringify(column) !== JSON.stringify(newColumn)) moved = true;
+                for (let i = 0; i < gridSize; i++) {
+                    grid[i][j] = newColumn[i] || 0;
+                }
+            }
+            return {
+                moved,
+                mergedCells
+            };
+        }
+
+        function checkGameState() {
+            // Check for win
+            for (let row of grid) {
+                if (row.includes(2048)) {
+                    showGameOver('You Win!');
+                    return;
+                }
+            }
+
+            // Check for possible moves
+            if (hasMoves()) return;
+            showGameOver('Game Over!');
+        }
+
+        function hasMoves() {
+            for (let i = 0; i < gridSize; i++) {
+                for (let j = 0; j < gridSize; j++) {
+                    if (grid[i][j] === 0) return true;
+                    if (j < gridSize - 1 && grid[i][j] === grid[i][j + 1]) return true;
+                    if (i < gridSize - 1 && grid[i][j] === grid[i + 1][j]) return true;
+                }
+            }
+            return false;
+        }
+
+        function showGameOver(message) {
+            const gameOver = document.getElementById('game-over');
+            gameOver.textContent = message;
+            gameOver.style.display = 'flex';
+        }
+
+        // Touch controls
+        document.getElementById('grid').addEventListener('touchstart', e => {
+            touchStartX = e.touches[0].clientX;
+            touchStartY = e.touches[0].clientY;
+            e.preventDefault();
+        }, {
+            passive: false
+        });
+
+        document.getElementById('grid').addEventListener('touchend', e => {
+            const touchEndX = e.changedTouches[0].clientX;
+            const touchEndY = e.changedTouches[0].clientY;
+            const dx = touchEndX - touchStartX;
+            const dy = touchEndY - touchStartY;
+            const absDx = Math.abs(dx);
+            const absDy = Math.abs(dy);
+
+            if (Math.max(absDx, absDy) < 30) return;
+
+            if (absDx > absDy) {
+                move(dx > 0 ? 'right' : 'left');
+            } else {
+                move(dy > 0 ? 'down' : 'up');
+            }
+            e.preventDefault();
+        }, {
+            passive: false
+        });
+
+        // Keyboard controls
+        document.addEventListener('keydown', e => {
+            const directions = {
+                ArrowLeft: 'left',
+                ArrowRight: 'right',
+                ArrowUp: 'up',
+                ArrowDown: 'down'
+            };
+            if (directions[e.key]) {
+                e.preventDefault();
+                move(directions[e.key]);
+            }
+        });
+
+        function showGameOver(message) {
+            const gameOver = document.getElementById('game-over');
+            gameOver.querySelector('.game-over-message').textContent = message;
+            gameOver.style.display = 'flex';
+        }
+
+        function shareScore() {
+            const shareText = `I scored ${score} points in 2048! Can you beat it? 🎮\nPlay at: ${window.location.href}`;
+
+            if (navigator.share) {
+                navigator.share({
+                    title: '2048 Game Score',
+                    text: shareText,
+                    url: window.location.href
+                }).catch(console.error);
+            } else {
+                // Fallback for browsers without Share API
+                const textArea = document.createElement('textarea');
+                textArea.value = shareText;
+                document.body.appendChild(textArea);
+                textArea.select();
+                try {
+                    document.execCommand('copy');
+                    alert('Score copied to clipboard! 📋\nYou can now share it.');
+                } catch (err) {
+                    prompt('Here\'s your score to copy and share:', shareText);
+                }
+                document.body.removeChild(textArea);
+            }
+        }
+
+
+        // Initialize game
+        initGame(4);
+    </script>
+</body>
+
+</html>

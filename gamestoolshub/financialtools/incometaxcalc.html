@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>India Tax Calculator 2024-25</title>
+    <style>
+         :root {
+            --background: #f0f0f0;
+            --neu-shadow: 10px 10px 20px #d9d9d9, -10px -10px 20px #ffffff;
+            --neu-inset: inset 5px 5px 10px #d9d9d9, inset -5px -5px 10px #ffffff;
+            --primary: #2a2a72;
+            --accent: #00b894;
+        }
+        
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background: var(--background);
+            min-height: 100vh;
+            padding: 2rem;
+            display: flex;
+            justify-content: center;
+        }
+        
+        .container {
+            max-width: 1200px;
+            width: 100%;
+        }
+        
+        .neu-card {
+            background: var(--background);
+            border-radius: 20px;
+            padding: 2rem;
+            margin: 1rem 0;
+            box-shadow: var(--neu-shadow);
+        }
+        
+        .neu-input {
+            background: var(--background);
+            border: none;
+            padding: 1rem;
+            border-radius: 15px;
+            box-shadow: var(--neu-inset);
+            width: 100%;
+            margin: 0.5rem 0;
+        }
+        
+        .toggle-container {
+            display: flex;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+        
+        .regime-toggle {
+            padding: 1rem 2rem;
+            border-radius: 15px;
+            cursor: pointer;
+            box-shadow: var(--neu-shadow);
+            transition: all 0.3s ease;
+        }
+        
+        .active-regime {
+            box-shadow: var(--neu-inset);
+            color: var(--primary);
+        }
+        
+        .tax-breakdown {
+            margin: 1rem 0;
+            padding: 1rem;
+            border-radius: 15px;
+            box-shadow: var(--neu-inset);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <div class="neu-card">
+            <h1>🇮🇳 India Income Tax Calculator 2024-25</h1>
+
+            <div class="toggle-container">
+                <div class="regime-toggle active-regime" onclick="toggleRegime('new')">New Regime</div>
+                <div class="regime-toggle" onclick="toggleRegime('old')">Old Regime</div>
+            </div>
+
+            <input type="number" id="income" class="neu-input" placeholder="Gross Income (₹)">
+            <input type="number" id="deductions" class="neu-input" placeholder="Deductions (₹)">
+            <select id="ageGroup" class="neu-input">
+                <option value="general">General (Below 60)</option>
+                <option value="senior">Senior (60-80)</option>
+                <option value="superSenior">Super Senior (80+)</option>
+            </select>
+
+            <button class="neu-input" style="background: var(--primary); color: white" onclick="calculateTax()">Calculate Tax</button>
+
+            <div id="result" class="tax-breakdown">
+                <h3>Tax Breakdown</h3>
+                <div id="taxSlabs"></div>
+                <p>Total Tax: ₹<span id="totalTax">0</span></p>
+                <p>Effective Tax Rate: <span id="taxRate">0</span>%</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let currentRegime = 'new';
+        const TAX_SLABS = {
+            new: {
+                general: [{
+                    min: 0,
+                    max: 300000,
+                    rate: 0
+                }, {
+                    min: 300001,
+                    max: 600000,
+                    rate: 0.05
+                }, {
+                    min: 600001,
+                    max: 900000,
+                    rate: 0.10
+                }, {
+                    min: 900001,
+                    max: 1200000,
+                    rate: 0.15
+                }, {
+                    min: 1200001,
+                    max: 1500000,
+                    rate: 0.20
+                }, {
+                    min: 1500001,
+                    max: Infinity,
+                    rate: 0.30
+                }],
+                senior: [{
+                    min: 0,
+                    max: 300000,
+                    rate: 0
+                }, {
+                    min: 300001,
+                    max: 600000,
+                    rate: 0.05
+                }, {
+                    min: 600001,
+                    max: 900000,
+                    rate: 0.10
+                }, {
+                    min: 900001,
+                    max: 1200000,
+                    rate: 0.15
+                }, {
+                    min: 1200001,
+                    max: 1500000,
+                    rate: 0.20
+                }, {
+                    min: 1500001,
+                    max: Infinity,
+                    rate: 0.30
+                }]
+            },
+            old: {
+                general: [{
+                    min: 0,
+                    max: 250000,
+                    rate: 0
+                }, {
+                    min: 250001,
+                    max: 500000,
+                    rate: 0.05
+                }, {
+                    min: 500001,
+                    max: 1000000,
+                    rate: 0.20
+                }, {
+                    min: 1000001,
+                    max: Infinity,
+                    rate: 0.30
+                }],
+                senior: [{
+                    min: 0,
+                    max: 300000,
+                    rate: 0
+                }, {
+                    min: 300001,
+                    max: 500000,
+                    rate: 0.05
+                }, {
+                    min: 500001,
+                    max: 1000000,
+                    rate: 0.20
+                }, {
+                    min: 1000001,
+                    max: Infinity,
+                    rate: 0.30
+                }],
+                superSenior: [{
+                    min: 0,
+                    max: 500000,
+                    rate: 0
+                }, {
+                    min: 500001,
+                    max: 1000000,
+                    rate: 0.20
+                }, {
+                    min: 1000001,
+                    max: Infinity,
+                    rate: 0.30
+                }]
+            }
+        };
+
+        function toggleRegime(regime) {
+            currentRegime = regime;
+            document.querySelectorAll('.regime-toggle').forEach(t =>
+                t.classList.remove('active-regime'));
+            event.target.classList.add('active-regime');
+        }
+
+        function calculateTax() {
+            const income = parseFloat(document.getElementById('income').value);
+            const deductions = parseFloat(document.getElementById('deductions').value) || 0;
+            const ageGroup = document.getElementById('ageGroup').value;
+
+            if (!income) return alert("Please enter valid income");
+
+            const taxableIncome = income - deductions;
+            const slabs = TAX_SLABS[currentRegime][ageGroup];
+            let remainingIncome = taxableIncome;
+            let totalTax = 0;
+            let breakdownHTML = '';
+
+            slabs.forEach(slab => {
+                const slabRange = slab.max - slab.min;
+                const taxableInSlab = Math.min(remainingIncome, slabRange);
+                const tax = taxableInSlab * slab.rate;
+
+                if (tax > 0) {
+                    breakdownHTML += `
+                        <div class="slab">
+                            ₹${format(slab.min)} - ₹${format(slab.max)}: 
+                            <strong>₹${format(tax)}</strong>
+                        </div>
+                    `;
+                }
+
+                totalTax += tax;
+                remainingIncome -= taxableInSlab;
+            });
+
+            // Add Health & Education Cess (4%)
+            totalTax *= 1.04;
+
+            document.getElementById('taxSlabs').innerHTML = breakdownHTML;
+            document.getElementById('totalTax').textContent = format(totalTax);
+            document.getElementById('taxRate').textContent =
+                ((totalTax / income) * 100).toFixed(2);
+        }
+
+        function format(num) {
+            return num.toLocaleString('en-IN', {
+                maximumFractionDigits: 2
+            });
+        }
+    </script>
+</body>
+
+</html>

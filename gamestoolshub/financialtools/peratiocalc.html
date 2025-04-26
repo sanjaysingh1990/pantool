@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>NeuroPulse - P/E Ratio Calculator</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+         :root {
+            --background: #e0e0e0;
+            --neu-shadow: 20px 20px 60px #bebebe, -20px -20px 60px #ffffff;
+            --neu-inset: inset 5px 5px 10px #bebebe, inset -5px -5px 10px #ffffff;
+            --primary: #2a2a72;
+            --accent: #ff6b6b;
+        }
+        
+        body {
+            font-family: 'Segoe UI', system-ui;
+            background: var(--background);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+            margin: 0;
+        }
+        
+        .container {
+            width: 90%;
+            max-width: 1200px;
+        }
+        
+        .neu-card {
+            background: var(--background);
+            border-radius: 20px;
+            box-shadow: var(--neu-shadow);
+            padding: 2rem;
+            margin: 1.5rem 0;
+            transition: all 0.3s ease;
+        }
+        
+        .neu-input {
+            background: var(--background);
+            border: none;
+            border-radius: 15px;
+            padding: 1rem;
+            font-size: 1.1rem;
+            box-shadow: var(--neu-inset);
+            width: 100%;
+            margin: 0.5rem 0;
+        }
+        
+        .neu-btn {
+            background: var(--background);
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 15px;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: var(--neu-shadow);
+            transition: all 0.2s ease;
+            margin: 0.5rem;
+        }
+        
+        .neu-btn:active {
+            box-shadow: var(--neu-inset);
+        }
+        
+        .primary {
+            color: var(--primary);
+        }
+        
+        .accent {
+            color: var(--accent);
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+        }
+        
+        .chart-container {
+            height: 400px;
+            position: relative;
+        }
+        
+        .alert {
+            color: var(--accent);
+            padding: 1rem;
+            border-radius: 15px;
+            margin: 1rem 0;
+            box-shadow: var(--neu-inset);
+        }
+        
+        .history-list {
+            list-style: none;
+            padding: 0;
+        }
+        
+        .history-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 1rem;
+            margin: 0.5rem 0;
+            border-radius: 15px;
+            box-shadow: var(--neu-inset);
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1 class="neu-card primary">📈 NeuroPulse P/E Analyzer</h1>
+
+        <div class="grid">
+            <!-- Input Section -->
+            <div class="neu-card">
+                <h2>🔍 Stock Analysis</h2>
+                <input type="number" id="price" class="neu-input" placeholder="Stock Price ($)">
+                <input type="number" id="eps" class="neu-input" placeholder="EPS ($)">
+                <button onclick="calculatePE()" class="neu-btn primary">Calculate</button>
+                <button onclick="resetForm()" class="neu-btn accent">Reset</button>
+
+                <div id="alert" class="alert" hidden></div>
+
+                <div class="neu-card" id="result" hidden>
+                    <h3>💡 Analysis Result</h3>
+                    <p>P/E Ratio: <span id="peValue">-</span></p>
+                    <p>Market Sentiment: <span id="sentiment">-</span></p>
+                    <p>Industry Average: <span id="industry">-</span></p>
+                </div>
+            </div>
+
+            <!-- Historical Data -->
+            <div class="neu-card">
+                <h2>📅 Historical Trends</h2>
+                <div class="chart-container">
+                    <canvas id="historyChart"></canvas>
+                </div>
+                <ul class="history-list" id="historyList"></ul>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let history = [];
+        let chart = null;
+
+        function calculatePE() {
+            const price = parseFloat(document.getElementById('price').value);
+            const eps = parseFloat(document.getElementById('eps').value);
+            const alertBox = document.getElementById('alert');
+
+            if (!price || !eps || eps <= 0) {
+                showAlert('⚠️ Please enter valid positive numbers');
+                return;
+            }
+
+            const peRatio = (price / eps).toFixed(2);
+            const resultDiv = document.getElementById('result');
+            const timestamp = new Date().toLocaleString();
+
+            history.push({
+                date: timestamp,
+                price: price,
+                eps: eps,
+                pe: peRatio
+            });
+
+            updateResult(peRatio);
+            updateChart();
+            updateHistoryList();
+            resultDiv.hidden = false;
+            alertBox.hidden = true;
+        }
+
+        function updateResult(peRatio) {
+            document.getElementById('peValue').textContent = peRatio;
+            document.getElementById('sentiment').textContent = getSentiment(peRatio);
+            document.getElementById('industry').textContent = compareToIndustry(peRatio);
+        }
+
+        function getSentiment(pe) {
+            if (pe < 15) return 'Undervalued 🟢';
+            if (pe < 25) return 'Fair Value 🟡';
+            return 'Overvalued 🔴';
+        }
+
+        function compareToIndustry(pe) {
+            const industryAvg = 22; // Mock industry average
+            const diff = ((pe - industryAvg) / industryAvg * 100).toFixed(1);
+            return `${industryAvg} (${diff}%)`;
+        }
+
+        function updateChart() {
+            const ctx = document.getElementById('historyChart').getContext('2d');
+
+            if (chart) chart.destroy();
+
+            // Get CSS variable value properly
+            const rootStyles = getComputedStyle(document.documentElement);
+            const primaryColor = rootStyles.getPropertyValue('--primary').trim();
+
+            chart = new Chart(ctx, {
+                type: 'line',
+                data: {
+                    labels: history.map(item => item.date),
+                    datasets: [{
+                        label: 'P/E Ratio History',
+                        data: history.map(item => item.pe),
+                        borderColor: primaryColor,
+                        tension: 0.4,
+                        fill: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: {
+                        legend: {
+                            position: 'top'
+                        }
+                    }
+                }
+            });
+        }
+
+        function updateHistoryList() {
+            const list = document.getElementById('historyList');
+            list.innerHTML = history.slice(-5).reverse().map(item => `
+                <li class="history-item">
+                    <span>${item.date}</span>
+                    <strong>${item.pe}</strong>
+                </li>
+            `).join('');
+        }
+
+        function showAlert(message) {
+            const alertBox = document.getElementById('alert');
+            alertBox.textContent = message;
+            alertBox.hidden = false;
+        }
+
+        function resetForm() {
+            document.getElementById('price').value = '';
+            document.getElementById('eps').value = '';
+            document.getElementById('result').hidden = true;
+            document.getElementById('alert').hidden = true;
+        }
+
+        // Initial demo data
+        history = [{
+            date: '2023-01-01',
+            price: 150,
+            eps: 5,
+            pe: 30
+        }, {
+            date: '2023-02-01',
+            price: 145,
+            eps: 5.2,
+            pe: 27.88
+        }, {
+            date: '2023-03-01',
+            price: 160,
+            eps: 5.5,
+            pe: 29.09
+        }];
+        updateChart();
+        updateHistoryList();
+    </script>
+</body>
+
+</html>

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Stock Profit/Loss Calculator</title>
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Poppins', sans-serif;
+        }
+        
+        body {
+            background: #e0e5ec;
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 2rem;
+        }
+        
+        .calculator {
+            background: #e0e5ec;
+            padding: 2rem;
+            border-radius: 2rem;
+            width: 100%;
+            max-width: 900px;
+            box-shadow: 20px 20px 60px #bebebe, -20px -20px 60px #ffffff;
+        }
+        
+        h1 {
+            color: #2c3e50;
+            text-align: center;
+            margin-bottom: 2rem;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .input-group {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+        
+        .input-card {
+            background: #e0e5ec;
+            padding: 1.5rem;
+            border-radius: 1.5rem;
+            box-shadow: inset 5px 5px 10px #bebebe, inset -5px -5px 10px #ffffff;
+        }
+        
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #2c3e50;
+            font-weight: 500;
+        }
+        
+        input,
+        select {
+            width: 100%;
+            padding: 0.8rem;
+            border: none;
+            border-radius: 1rem;
+            background: #e0e5ec;
+            box-shadow: inset 3px 3px 6px #bebebe, inset -3px -3px 6px #ffffff;
+            color: #2c3e50;
+        }
+        
+        button {
+            background: #e0e5ec;
+            color: #2c3e50;
+            border: none;
+            padding: 1rem 2rem;
+            border-radius: 1rem;
+            cursor: pointer;
+            box-shadow: 5px 5px 10px #bebebe, -5px -5px 10px #ffffff;
+            transition: all 0.3s ease;
+            display: block;
+            margin: 1rem auto;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .results {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+        
+        .result-card {
+            background: #e0e5ec;
+            padding: 1.5rem;
+            border-radius: 1.5rem;
+            box-shadow: 5px 5px 10px #bebebe, -5px -5px 10px #ffffff;
+            text-align: center;
+        }
+        
+        .positive {
+            color: #27ae60;
+        }
+        
+        .negative {
+            color: #c0392b;
+        }
+        
+        .tax-breakdown {
+            margin-top: 2rem;
+            padding: 1.5rem;
+            border-radius: 1.5rem;
+            background: #e0e5ec;
+            box-shadow: inset 3px 3px 6px #bebebe, inset -3px -3px 6px #ffffff;
+        }
+        
+        .input-card input,
+        .input-card select {
+            margin-bottom: 1rem;
+            /* Add this line */
+            width: 100%;
+            padding: 0.8rem;
+            border: none;
+            border-radius: 1rem;
+            background: #e0e5ec;
+            box-shadow: inset 3px 3px 6px #bebebe, inset -3px -3px 6px #ffffff;
+            color: #2c3e50;
+        }
+        /* Add this to remove margin from last input */
+        
+        .input-card input:last-child,
+        .input-card select:last-child {
+            margin-bottom: 0;
+        }
+    </style>
+
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7966070414985050" crossorigin="anonymous"></script>
+
+</head>
+
+<body>
+    <div class="calculator">
+        <h1>Stock Profit/Loss Calculator (India)</h1>
+
+        <div class="input-group">
+            <div class="input-card">
+                <label>Purchase Details</label>
+                <input type="number" id="buyQty" placeholder="Quantity">
+                <input type="number" id="buyPrice" placeholder="Buy Price (₹)">
+            </div>
+
+            <div class="input-card">
+                <label>Sell Details</label>
+                <input type="number" id="sellQty" placeholder="Quantity">
+                <input type="number" id="sellPrice" placeholder="Sell Price (₹)">
+            </div>
+        </div>
+
+        <div class="input-group">
+            <div class="input-card">
+                <label>Brokerage Charges</label>
+                <input type="number" id="brokeragePer" value="0.03" step="0.01" placeholder="Brokerage %">
+                <input type="number" id="brokerageMin" value="20" placeholder="Minimum Brokerage (₹)">
+            </div>
+
+            <div class="input-card">
+                <label>Holding Period</label>
+                <select id="holdingPeriod">
+                    <option value="short">Short Term (< 1 Year)</option>
+                    <option value="long">Long Term (≥ 1 Year)</option>
+                </select>
+            </div>
+        </div>
+
+        <button onclick="calculate()">Calculate</button>
+
+        <div class="results">
+            <div class="result-card">
+                <h3>Gross Profit/Loss</h3>
+                <div id="grossResult" class="positive">₹0.00</div>
+            </div>
+            <div class="result-card">
+                <h3>Total Charges</h3>
+                <div id="chargesResult">₹0.00</div>
+            </div>
+            <div class="result-card">
+                <h3>Net Profit/Loss</h3>
+                <div id="netResult" class="positive">₹0.00</div>
+            </div>
+        </div>
+
+        <div class="tax-breakdown">
+            <h3>Tax Breakdown</h3>
+            <div id="taxDetails">
+                <p>STT: ₹0.00</p>
+                <p>GST: ₹0.00</p>
+                <p>Stamp Duty: ₹0.00</p>
+                <p>Capital Gains Tax: ₹0.00</p>
+                <p>Education Cess: ₹0.00</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function calculate() {
+            // Get input values
+            const buyQty = parseFloat(document.getElementById('buyQty').value);
+            const buyPrice = parseFloat(document.getElementById('buyPrice').value);
+            const sellQty = parseFloat(document.getElementById('sellQty').value);
+            const sellPrice = parseFloat(document.getElementById('sellPrice').value);
+            const brokeragePer = parseFloat(document.getElementById('brokeragePer').value) / 100;
+            const brokerageMin = parseFloat(document.getElementById('brokerageMin').value);
+            const isLongTerm = document.getElementById('holdingPeriod').value === 'long';
+
+            // Calculate basic values
+            const buyValue = buyQty * buyPrice;
+            const sellValue = sellQty * sellPrice;
+            const grossProfit = sellValue - buyValue;
+
+            // Calculate brokerage
+            const buyBrokerage = Math.max(buyValue * brokeragePer, brokerageMin);
+            const sellBrokerage = Math.max(sellValue * brokeragePer, brokerageMin);
+            const totalBrokerage = buyBrokerage + sellBrokerage;
+
+            // Calculate taxes and charges (India specific)
+            const stt = sellValue * 0.00025; // 0.025% STT on sell value
+            const gst = totalBrokerage * 0.18; // 18% GST on brokerage
+            const stampDuty = buyValue * 0.00003; // 0.003% stamp duty
+
+            // Calculate capital gains tax
+            let capitalGainsTax = 0;
+            if (grossProfit > 0) {
+                if (isLongTerm) {
+                    capitalGainsTax = grossProfit * 0.10; // 10% LTCG
+                } else {
+                    capitalGainsTax = grossProfit * 0.15; // 15% STCG
+                }
+            }
+
+            // Education cess (4% of tax amount)
+            const educationCess = capitalGainsTax * 0.04;
+
+            // Total charges and taxes
+            const totalCharges = totalBrokerage + stt + gst + stampDuty + capitalGainsTax + educationCess;
+            const netProfit = grossProfit - totalCharges;
+
+            // Update results
+            updateResult('grossResult', grossProfit);
+            updateResult('chargesResult', totalCharges);
+            updateResult('netResult', netProfit);
+
+            // Update tax breakdown
+            document.getElementById('taxDetails').innerHTML = `
+                <p>STT: ₹${stt.toFixed(2)}</p>
+                <p>GST: ₹${gst.toFixed(2)}</p>
+                <p>Stamp Duty: ₹${stampDuty.toFixed(2)}</p>
+                <p>Capital Gains Tax: ₹${capitalGainsTax.toFixed(2)}</p>
+                <p>Education Cess: ₹${educationCess.toFixed(2)}</p>
+            `;
+        }
+
+        function updateResult(elementId, value) {
+            const element = document.getElementById(elementId);
+            element.textContent = `₹${Math.abs(value).toFixed(2)}`;
+            element.className = value >= 0 ? 'positive' : 'negative';
+        }
+    </script>
+</body>
+
+</html>

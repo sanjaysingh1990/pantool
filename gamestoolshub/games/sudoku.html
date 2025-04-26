@@ -1,0 +1,581 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Sudoku Master</title>
+    <style>
+         :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --accent: #e74c3c;
+            --background: #ecf0f1;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui;
+        }
+        
+        body {
+            background: var(--background);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .game-container {
+            display: grid;
+            grid-template-columns: 1fr 300px;
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+        
+        .sudoku-board {
+            display: grid;
+            grid-template-columns: repeat(9, 1fr);
+            gap: 2px;
+            background: var(--primary);
+            padding: 5px;
+            border-radius: 8px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.2);
+        }
+        
+        .cell {
+            aspect-ratio: 1;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            transition: all 0.2s;
+            border: 1px solid #ddd;
+        }
+        
+        .cell.fixed {
+            background: #f8f9fa;
+            font-weight: 700;
+            color: var(--primary);
+        }
+        
+        .cell.conflict {
+            background: #ffe6e6;
+        }
+        
+        .selected {
+            background: var(--secondary);
+            color: white;
+        }
+        
+        .controls {
+            background: white;
+            padding: 20px;
+            border-radius: 10px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .number-pad {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 10px;
+            margin: 20px 0;
+        }
+        
+        .number-btn {
+            padding: 15px;
+            font-size: 20px;
+            border: none;
+            background: var(--background);
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        .number-btn:hover {
+            background: var(--secondary);
+            color: white;
+        }
+        
+        .timer {
+            font-size: 24px;
+            text-align: center;
+            margin: 20px 0;
+            color: var(--primary);
+        }
+        
+        .difficulty-select {
+            width: 100%;
+            padding: 10px;
+            margin: 10px 0;
+            border: 2px solid var(--primary);
+            border-radius: 5px;
+        }
+        
+        .share-section {
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        .share-btn {
+            background: #25D366;
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            margin: 5px;
+            transition: transform 0.2s;
+        }
+        
+        @media (max-width: 768px) {
+            .game-container {
+                grid-template-columns: 1fr;
+            }
+            .cell {
+                font-size: 18px;
+            }
+        }
+    </style>
+
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7966070414985050" crossorigin="anonymous"></script>
+
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>Sudoku Master 🧩</h1>
+            <p>Challenge Your Logical Thinking Skills</p>
+        </header>
+
+        <div class="game-container">
+            <div class="sudoku-board" id="board"></div>
+
+            <div class="controls">
+                <select class="difficulty-select" id="difficulty">
+                    <option value="easy">Easy</option>
+                    <option value="medium">Medium</option>
+                    <option value="hard">Hard</option>
+                </select>
+
+                <div class="timer" id="timer">00:00</div>
+
+                <div class="number-pad" id="numberPad">
+                    <button class="number-btn" onclick="setNumber(1)">1</button>
+                    <button class="number-btn" onclick="setNumber(2)">2</button>
+                    <button class="number-btn" onclick="setNumber(3)">3</button>
+                    <button class="number-btn" onclick="setNumber(4)">4</button>
+                    <button class="number-btn" onclick="setNumber(5)">5</button>
+                    <button class="number-btn" onclick="setNumber(6)">6</button>
+                    <button class="number-btn" onclick="setNumber(7)">7</button>
+                    <button class="number-btn" onclick="setNumber(8)">8</button>
+                    <button class="number-btn" onclick="setNumber(9)">9</button>
+                    <button class="number-btn" onclick="clearNumber()">⌫</button>
+                </div>
+
+                <button onclick="checkSolution()" class="number-btn">Check Solution</button>
+                <button onclick="newGame()" class="number-btn">New Game</button>
+            </div>
+        </div>
+
+        <div class="share-section">
+            <button class="share-btn" onclick="shareChallenge('whatsapp')">
+                💬 Challenge via WhatsApp
+            </button>
+            <button class="share-btn" onclick="shareChallenge('link')">
+                🔗 Copy Challenge Link
+            </button>
+        </div>
+    </div>
+
+    <script>
+        class SudokuGame {
+            constructor() {
+                this.board = [];
+                this.solution = [];
+                this.selectedCell = null;
+                this.time = 0;
+                this.timerId = null;
+                this.difficulty = 'easy';
+                this.init();
+            }
+
+            init() {
+                this.newGame();
+                this.startTimer();
+            }
+
+            newGame() {
+                this.time = 0;
+                this.difficulty = document.getElementById('difficulty').value;
+                this.generateNewPuzzle();
+                this.renderBoard();
+                if (this.timerId) clearInterval(this.timerId);
+                this.startTimer();
+            }
+
+            generateNewPuzzle() {
+                // Generate complete solution
+                const solvedGrid = this.generateCompleteBoard();
+
+                // Create puzzle based on difficulty
+                const clues = {
+                    easy: 36,
+                    medium: 28,
+                    hard: 22
+                }[this.difficulty];
+
+                this.board = this.createPuzzle(solvedGrid, clues);
+                this.solution = solvedGrid.flat();
+            }
+
+            generateCompleteBoard() {
+                const grid = Array(9).fill().map(() => Array(9).fill(0));
+                this.fillGrid(grid);
+                return grid;
+            }
+
+            fillGrid(grid) {
+                const numbers = this.shuffle([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+                for (let row = 0; row < 9; row++) {
+                    for (let col = 0; col < 9; col++) {
+                        if (grid[row][col] === 0) {
+                            for (const num of numbers) {
+                                if (this.isValid(grid, row, col, num)) {
+                                    grid[row][col] = num;
+                                    if (this.fillGrid(grid)) return true;
+                                    grid[row][col] = 0;
+                                }
+                            }
+                            return false;
+                        }
+                    }
+                }
+                return true;
+            }
+
+            createPuzzle(solvedGrid, clues) {
+                const flatSolution = solvedGrid.flat();
+                const indices = this.shuffle([...Array(81).keys()]);
+                const puzzle = structuredClone(flatSolution);
+
+                let removed = 0;
+                for (const index of indices) {
+                    if (removed >= 81 - clues) break;
+
+                    const backup = puzzle[index];
+                    puzzle[index] = null;
+
+                    if (!this.hasUniqueSolution(structuredClone(puzzle))) {
+                        puzzle[index] = backup;
+                    } else {
+                        removed++;
+                    }
+                }
+
+                return puzzle.map((value, index) => ({
+                    value: value,
+                    fixed: value !== null,
+                    index: index
+                }));
+            }
+
+            hasUniqueSolution(puzzle) {
+                const temp = structuredClone(puzzle);
+                return this.solve(temp);
+            }
+
+            solve(puzzle) {
+                for (let index = 0; index < 81; index++) {
+                    if (puzzle[index] === null) {
+                        const row = Math.floor(index / 9);
+                        const col = index % 9;
+                        const used = [
+                            ...this.getRowValues(puzzle, row),
+                            ...this.getColValues(puzzle, col),
+                            ...this.getBoxValues(puzzle, row, col)
+                        ];
+
+                        for (let num = 1; num <= 9; num++) {
+                            if (!used.includes(num)) {
+                                puzzle[index] = num;
+                                if (this.solve(puzzle)) {
+                                    return true;
+                                }
+                                puzzle[index] = null;
+                            }
+                        }
+                        return false;
+                    }
+                }
+                return true;
+            }
+
+            // Helper methods
+            shuffle(array) {
+                // Fisher-Yates shuffle implementation
+                for (let i = array.length - 1; i > 0; i--) {
+                    const j = Math.floor(Math.random() * (i + 1));
+                    [array[i], array[j]] = [array[j], array[i]];
+                }
+                return array;
+            }
+
+            // NEW HELPER METHODS
+            getRowValues(puzzle, row) {
+                const start = row * 9;
+                return puzzle.slice(start, start + 9).filter(v => v !== null);
+            }
+
+            getColValues(puzzle, col) {
+                const values = [];
+                for (let row = 0; row < 9; row++) {
+                    const index = row * 9 + col;
+                    if (puzzle[index] !== null) values.push(puzzle[index]);
+                }
+                return values;
+            }
+
+            getBoxValues(puzzle, row, col) {
+                const values = [];
+                const boxRow = Math.floor(row / 3) * 3;
+                const boxCol = Math.floor(col / 3) * 3;
+
+                for (let r = boxRow; r < boxRow + 3; r++) {
+                    for (let c = boxCol; c < boxCol + 3; c++) {
+                        const index = r * 9 + c;
+                        if (puzzle[index] !== null) values.push(puzzle[index]);
+                    }
+                }
+                return values;
+            }
+
+            isValid(grid, row, col, num) {
+                // Check row
+                for (let c = 0; c < 9; c++) {
+                    if (grid[row][c] === num) return false;
+                }
+                // Check column
+                for (let r = 0; r < 9; r++) {
+                    if (grid[r][col] === num) return false;
+                }
+                // Check 3x3 box
+                const boxRow = Math.floor(row / 3) * 3;
+                const boxCol = Math.floor(col / 3) * 3;
+                for (let r = boxRow; r < boxRow + 3; r++) {
+                    for (let c = boxCol; c < boxCol + 3; c++) {
+                        if (grid[r][c] === num) return false;
+                    }
+                }
+                return true;
+            }
+
+            // Game logic methods
+            checkWin() {
+                const isComplete = this.board.every(cell =>
+                    cell.value !== null &&
+                    cell.value === this.solution[cell.index]
+                );
+
+                const hasConflicts = this.checkConflicts();
+
+                if (isComplete && !hasConflicts) {
+                    clearInterval(this.timerId);
+                    alert(`Congratulations! Solved in ${this.time}s`);
+                    return true;
+                }
+                return false;
+            }
+
+            checkConflicts() {
+                let hasConflict = false;
+                const grid = this.board.map(cell => cell.value);
+
+                // Check rows
+                for (let row = 0; row < 9; row++) {
+                    const numbers = new Set();
+                    for (let col = 0; col < 9; col++) {
+                        const idx = row * 9 + col;
+                        const val = grid[idx];
+                        if (val && numbers.has(val)) hasConflict = true;
+                        numbers.add(val);
+                    }
+                }
+
+                // Check columns
+                for (let col = 0; col < 9; col++) {
+                    const numbers = new Set();
+                    for (let row = 0; row < 9; row++) {
+                        const idx = row * 9 + col;
+                        const val = grid[idx];
+                        if (val && numbers.has(val)) hasConflict = true;
+                        numbers.add(val);
+                    }
+                }
+
+                // Check boxes
+                for (let box = 0; box < 9; box++) {
+                    const numbers = new Set();
+                    const startRow = Math.floor(box / 3) * 3;
+                    const startCol = (box % 3) * 3;
+                    for (let r = startRow; r < startRow + 3; r++) {
+                        for (let c = startCol; c < startCol + 3; c++) {
+                            const idx = r * 9 + c;
+                            const val = grid[idx];
+                            if (val && numbers.has(val)) hasConflict = true;
+                            numbers.add(val);
+                        }
+                    }
+                }
+
+                return hasConflict;
+            }
+
+            selectCell(index) {
+                if (this.board[index].fixed) return;
+
+                document.querySelectorAll('.cell').forEach(cell =>
+                    cell.classList.remove('selected'));
+                document.querySelector(`[data-index="${index}"]`)
+                    .classList.add('selected');
+                this.selectedCell = index;
+            }
+
+            setNumber(num) {
+                if (this.selectedCell === null || this.board[this.selectedCell].fixed) return;
+
+                // Update cell value
+                this.board[this.selectedCell].value = num;
+
+                // Update conflicts
+                this.updateConflicts();
+                this.renderBoard();
+            }
+
+            clearNumber() {
+                if (this.selectedCell === null || this.board[this.selectedCell].fixed) return;
+                this.board[this.selectedCell].value = null;
+                this.updateConflicts();
+                this.renderBoard();
+            }
+
+            updateConflicts() {
+                const conflicts = new Set();
+                const grid = this.board.map(cell => cell.value);
+
+                // Check rows
+                for (let row = 0; row < 9; row++) {
+                    const numbers = new Map();
+                    for (let col = 0; col < 9; col++) {
+                        const idx = row * 9 + col;
+                        const val = grid[idx];
+                        if (val) {
+                            if (numbers.has(val)) {
+                                conflicts.add(idx);
+                                conflicts.add(numbers.get(val));
+                            }
+                            numbers.set(val, idx);
+                        }
+                    }
+                }
+
+                // Check columns and boxes similarly...
+
+                // Update conflict classes
+                document.querySelectorAll('.cell').forEach((cell, index) => {
+                    cell.classList.toggle('conflict', conflicts.has(index));
+                });
+            }
+
+            startTimer() {
+                this.timerId = setInterval(() => {
+                    this.time++;
+                    document.getElementById('timer').textContent =
+                        `${Math.floor(this.time / 60).toString().padStart(2, '0')}:` +
+                        `${(this.time % 60).toString().padStart(2, '0')}`;
+                }, 1000);
+            }
+
+            renderBoard() {
+                const boardEl = document.getElementById('board');
+                boardEl.innerHTML = '';
+
+                this.board.forEach((cell, index) => {
+                    const cellEl = document.createElement('div');
+                    cellEl.className = `cell ${cell.fixed ? 'fixed' : ''}`;
+                    cellEl.textContent = cell.value || '';
+                    cellEl.dataset.index = index;
+                    cellEl.addEventListener('click', () => this.selectCell(index));
+
+                    // Add 3x3 box borders
+                    if ((index % 9) % 3 === 2 && index % 9 !== 8) {
+                        cellEl.style.borderRight = '2px solid var(--primary)';
+                    }
+                    if (Math.floor(index / 9) % 3 === 2 && Math.floor(index / 9) !== 8) {
+                        cellEl.style.borderBottom = '2px solid var(--primary)';
+                    }
+
+                    boardEl.appendChild(cellEl);
+                });
+            }
+        }
+
+        // Initialize game
+        const game = new SudokuGame();
+
+        // UI Handlers
+        function setNumber(num) {
+            game.setNumber(num);
+        }
+
+        function clearNumber() {
+            game.clearNumber();
+        }
+
+        function checkSolution() {
+            game.checkWin();
+        }
+
+        function newGame() {
+            game.newGame();
+        }
+
+        function shareChallenge(platform) {
+            const puzzleData = btoa(JSON.stringify({
+                difficulty: game.difficulty,
+                board: game.board,
+                time: game.time
+            }));
+
+            const shareUrl = `${window.location.href}?puzzle=${puzzleData}`;
+            const message = `Can you solve my ${game.difficulty} Sudoku challenge? ${shareUrl}`;
+
+            switch (platform) {
+                case 'whatsapp':
+                    window.open(`https://wa.me/?text=${encodeURIComponent(message)}`);
+                    break;
+                case 'link':
+                    navigator.clipboard.writeText(shareUrl);
+                    alert('Challenge link copied to clipboard!');
+                    break;
+            }
+        }
+    </script>
+</body>
+
+</html>

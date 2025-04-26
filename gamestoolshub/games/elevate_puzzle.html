@@ -1,0 +1,475 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BrainBoost Pro - Cognitive Training</title>
+    <meta property="og:title" content="BrainBoost Pro">
+    <meta property="og:description" content="I scored {{score}} points in BrainBoost Pro! Can you beat it?">
+    <style>
+         :root {
+            --primary: #2C3E50;
+            --secondary: #3498DB;
+            --accent: #E74C3C;
+            --background: #ECF0F1;
+        }
+        
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui;
+        }
+        
+        body {
+            background: var(--background);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        header {
+            text-align: center;
+            padding: 20px;
+            margin-bottom: 40px;
+        }
+        
+        .dashboard {
+            background: white;
+            padding: 20px;
+            border-radius: 15px;
+            margin-bottom: 30px;
+            display: flex;
+            justify-content: space-around;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+        }
+        
+        .game-section {
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 20px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            min-height: 400px;
+        }
+        
+        .game-grid {
+            display: grid;
+            gap: 15px;
+            margin: 20px 0;
+        }
+        
+        .math-problem {
+            font-size: 2.5em;
+            text-align: center;
+            margin: 20px 0;
+            color: var(--primary);
+        }
+        
+        .memory-card {
+            background: var(--secondary);
+            border-radius: 10px;
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.3s;
+            font-size: 24px;
+            color: white;
+        }
+        
+        .word-scramble {
+            font-size: 1.5em;
+            text-align: center;
+            padding: 20px;
+            background: #f8f9fa;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+        
+        input,
+        button {
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 1.1em;
+            border: 2px solid var(--primary);
+            margin: 5px;
+        }
+        
+        button {
+            background: var(--secondary);
+            color: white;
+            border: none;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        
+        button:hover {
+            transform: translateY(-2px);
+        }
+        
+        .social-sharing {
+            text-align: center;
+            margin-top: 30px;
+        }
+        
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.5);
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .modal-content {
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            text-align: center;
+        }
+        
+        .progress-bar {
+            height: 10px;
+            background: #eee;
+            border-radius: 5px;
+            overflow: hidden;
+        }
+        
+        .progress {
+            height: 100%;
+            background: var(--secondary);
+            transition: width 0.3s;
+        }
+        
+        .memory-grid {
+            display: grid;
+            gap: 15px;
+            margin: 20px auto;
+            grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
+            max-width: 90%;
+            justify-content: center;
+        }
+        
+        .memory-card {
+            background: var(--secondary);
+            border-radius: 10px;
+            aspect-ratio: 1;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: transform 0.3s;
+            font-size: clamp(18px, 3vw, 32px);
+            color: white;
+            max-width: 100px;
+            width: 100%;
+            position: relative;
+            overflow: hidden;
+        }
+        /* Desktop-specific adjustments */
+        
+        @media (min-width: 1024px) {
+            .memory-grid {
+                grid-template-columns: repeat(6, 1fr);
+                max-width: 800px;
+                gap: 20px;
+            }
+            .memory-card {
+                max-width: 120px;
+                font-size: 24px;
+                box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+            }
+        }
+        /* Mobile optimization */
+        
+        @media (max-width: 768px) {
+            .memory-grid {
+                grid-template-columns: repeat(4, 1fr);
+                max-width: 95%;
+            }
+            .memory-card {
+                max-width: 80px;
+                font-size: 20px;
+            }
+        }
+        /* Small mobile devices */
+        
+        @media (max-width: 480px) {
+            .memory-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 10px;
+            }
+            .memory-card {
+                max-width: 70px;
+                font-size: 18px;
+            }
+        }
+    </style>
+
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7966070414985050" crossorigin="anonymous"></script>
+
+</head>
+
+<body>
+    <div class="container">
+        <header>
+            <h1>BrainBoost Pro 🧠</h1>
+            <p>Train Your Brain - From Beginner to Advanced</p>
+        </header>
+
+        <div class="dashboard">
+            <div class="stat">
+                <h3>🏆 Total Score</h3>
+                <p id="totalScore">0</p>
+            </div>
+            <div class="stat">
+                <h3>📈 Level</h3>
+                <p id="currentLevel">1</p>
+            </div>
+            <div class="stat">
+                <h3>🔥 Streak</h3>
+                <p id="currentStreak">0</p>
+            </div>
+        </div>
+
+        <div class="game-section" id="gameArea">
+            <!-- Game content will be dynamically loaded here -->
+        </div>
+
+        <div class="progress-bar">
+            <div class="progress" id="timeProgress"></div>
+        </div>
+
+        <div class="social-sharing">
+            <button onclick="shareScore('twitter')">🐦 Share on Twitter</button>
+            <button onclick="shareScore('whatsapp')">💬 Share on WhatsApp</button>
+        </div>
+    </div>
+
+    <div class="modal" id="gameOverModal">
+        <div class="modal-content">
+            <h2>Game Over! 🎮</h2>
+            <p>Your final score: <span id="finalScore">0</span></p>
+            <button onclick="startNewGame()">🔄 Play Again</button>
+            <div class="social-sharing" style="margin-top: 20px;">
+                <button onclick="shareScore('twitter')">🐦 Share Score</button>
+                <button onclick="shareScore('whatsapp')">💬 Share via WhatsApp</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const games = {
+            math: {
+                description: "Solve the math problem",
+                generate: (level) => {
+                    const operations = ['+', '-', '*', '/'];
+                    const operation = operations[Math.min(level - 1, 3)];
+                    const maxNumber = Math.min(10 + (level * 2), 50);
+                    const a = Math.floor(Math.random() * maxNumber) + 1;
+                    const b = Math.floor(Math.random() * maxNumber) + 1;
+
+                    let problem, answer;
+                    switch (operation) {
+                        case '+':
+                            answer = a + b;
+                            problem = `${a} + ${b}`;
+                            break;
+                        case '-':
+                            answer = a - b;
+                            problem = `${a} - ${b}`;
+                            break;
+                        case '*':
+                            answer = a * b;
+                            problem = `${a} × ${b}`;
+                            break;
+                        case '/':
+                            answer = a;
+                            problem = `${a * b} ÷ ${b}`;
+                            break;
+                    }
+                    return {
+                        problem,
+                        answer
+                    };
+                }
+            },
+            memory: {
+                description: "Memorize the sequence",
+                generate: (level) => {
+                    const sequenceLength = Math.min(3 + Math.floor(level / 2), 8);
+                    const sequence = Array.from({
+                            length: sequenceLength
+                        },
+                        () => Math.floor(Math.random() * 9) + 1);
+                    return {
+                        sequence,
+                        answer: sequence.join('')
+                    };
+                }
+            },
+            reading: {
+                description: "Unscramble the sentence",
+                generate: (level) => {
+                    const sentences = [
+                        "The quick brown fox jumps over the lazy dog",
+                        "Programming is the art of telling another human what one wants the computer to do",
+                        "Cognitive training improves mental abilities through structured practice"
+                    ];
+                    const sentence = sentences[Math.min(level - 1, 2)];
+                    const words = sentence.split(' ');
+                    for (let i = words.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [words[i], words[j]] = [words[j], words[i]];
+                    }
+                    return {
+                        scrambled: words.join(' '),
+                        answer: sentence
+                    };
+                }
+            }
+        };
+
+        let currentGame = null;
+        let score = 0;
+        let level = 1;
+        let streak = 0;
+        let timeLeft = 30;
+        let timerId = null;
+
+        function updateDashboard() {
+            document.getElementById('totalScore').textContent = score;
+            document.getElementById('currentLevel').textContent = level;
+            document.getElementById('currentStreak').textContent = streak;
+        }
+
+        function loadGame(gameType) {
+            const gameArea = document.getElementById('gameArea');
+            const game = games[gameType];
+            currentGame = game.generate(level);
+
+            let gameHTML = '';
+            switch (gameType) {
+                case 'math':
+                    gameHTML = `
+                        <h2>Math Challenge</h2>
+                        <div class="math-problem">${currentGame.problem} = ?</div>
+                        <input type="number" id="userAnswer" placeholder="Your answer">
+                        <button onclick="checkAnswer()">Check</button>
+                    `;
+                    break;
+
+                case 'memory':
+                    gameHTML = `
+                        <h2>Memory Sequence</h2>
+                        <div class="game-grid" id="memoryGrid">
+                            ${currentGame.sequence.map(num => `
+                                <div class="memory-card">${num}</div>
+                            `).join('')}
+                        </div>
+                        <input type="text" id="userAnswer" placeholder="Enter sequence">
+                        <button onclick="checkAnswer()">Submit</button>
+                    `;
+                    setTimeout(() => {
+                        document.querySelectorAll('.memory-card').forEach(card => {
+                            card.style.opacity = '0.3';
+                        });
+                    }, 2000);
+                    break;
+                    
+                case 'reading':
+                    gameHTML = `
+                        <h2>Sentence Scramble</h2>
+                        <div class="word-scramble">${currentGame.scrambled}</div>
+                        <input type="text" id="userAnswer" placeholder="Correct sentence">
+                        <button onclick="checkAnswer()">Submit</button>
+                    `;
+                    break;
+            }
+            
+            gameArea.innerHTML = gameHTML;
+        }
+
+        function checkAnswer() {
+            const userAnswer = document.getElementById('userAnswer').value.trim();
+            const isCorrect = currentGame.answer.toString() === userAnswer.toString();
+            
+            if (isCorrect) {
+                score += 10 * level;
+                streak++;
+                if (streak % 3 === 0) level++;
+                loadRandomGame();
+            } else {
+                streak = 0;
+                score = Math.max(0, score - 5);
+            }
+            
+            updateDashboard();
+            document.getElementById('userAnswer').value = '';
+        }
+
+        function loadRandomGame() {
+            const gameTypes = ['math', 'memory', 'reading'];
+            const randomGame = gameTypes[Math.floor(Math.random() * gameTypes.length)];
+            loadGame(randomGame);
+        }
+
+        function startTimer() {
+            timerId = setInterval(() => {
+                timeLeft--;
+                document.getElementById('timeProgress').style.width = 
+                    `${(timeLeft / 30) * 100}%`;
+                
+                if (timeLeft <= 0) {
+                    endGame();
+                }
+            }, 1000);
+        }
+
+        function endGame() {
+            clearInterval(timerId);
+            document.getElementById('gameOverModal').style.display = 'flex';
+            document.getElementById('finalScore').textContent = score;
+        }
+
+        function startNewGame() {
+            score = 0;
+            level = 1;
+            streak = 0;
+            timeLeft = 30;
+            updateDashboard();
+            document.getElementById('gameOverModal').style.display = 'none';
+            loadRandomGame();
+            startTimer();
+        }
+
+        function shareScore(platform) {
+            const shareText = `I scored ${score} points in BrainBoost Pro! Can you beat it? 🧠`;
+            const shareUrl = `${window.location.href}?score=${score}`;
+            
+            switch(platform) {
+                case 'twitter':
+                    window.open(`https://twitter.com/intent/tweet?text=${encodeURIComponent(shareText)}&url=${encodeURIComponent(shareUrl)}`);
+                    break;
+                case 'whatsapp':
+                    window.open(`https://wa.me/?text=${encodeURIComponent(`${shareText} ${shareUrl}`)}`);
+                    break;
+            }
+        }
+
+        // Initialize game
+        startNewGame();
+    </script>
+</body>
+
+</html>

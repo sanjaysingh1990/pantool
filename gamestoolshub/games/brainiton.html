@@ -1,0 +1,346 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Physics Puzzles - Brain Challenge</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            background: #2c3e50;
+            font-family: 'Arial', sans-serif;
+            overflow: hidden;
+        }
+        
+        .game-container {
+            position: relative;
+            width: 100vw;
+            height: 100vh;
+        }
+        
+        #canvas {
+            background: #34495e;
+        }
+        
+        .controls {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            z-index: 100;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        button {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            margin: 5px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        button:hover {
+            background: #2980b9;
+        }
+        
+        .level-info {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            background: rgba(255, 255, 255, 0.9);
+            padding: 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
+        }
+        
+        .objective {
+            margin: 10px 0;
+            font-weight: bold;
+        }
+    </style>
+
+    <script async src="https://pagead2.googlesyndication.com/pagead/js/adsbygoogle.js?client=ca-pub-7966070414985050" crossorigin="anonymous"></script>
+
+</head>
+
+<body>
+    <div class="game-container">
+        <canvas id="canvas"></canvas>
+        <div class="controls">
+            <button onclick="clearDrawing()">Clear</button>
+            <button onclick="resetLevel()">Retry</button>
+            <button onclick="nextLevel()">Next Level</button>
+        </div>
+        <div class="level-info">
+            <div>Level: <span id="currentLevel">1</span></div>
+            <div class="objective" id="objective"></div>
+        </div>
+    </div>
+
+    <!-- Physics Engine -->
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/matter-js/0.18.0/matter.min.js"></script>
+
+    <!-- Sound Effects -->
+    <audio id="successSound" src="data:audio/mpeg;base64,SUQzBAAAAAAAI1RTU0UAAAAPAAADTGF2ZjU4Ljc2LjEwMAAAAAAAAAAAAAAA//uQAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAASW5mbwAAAA8AAAAHAAABcACAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgICAgAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA//sQBAAP8AAAaQAAAAgAAA0gAAABAAABpAAAACAAADSAAAAE5hdmFob3kgUmluZwA4Q1N4AAAAHAAABcAAAABkYXRh4IkAAAAA"></audio>
+    <audio id="drawSound" src="data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YU"></audio>
+
+    <script>
+        const Engine = Matter.Engine,
+            Render = Matter.Render,
+            World = Matter.World,
+            Bodies = Matter.Bodies,
+            Composite = Matter.Composite,
+            Body = Matter.Body,
+            Events = Matter.Events;
+
+        let engine;
+        let render;
+        let isDrawing = false;
+        let currentPath = [];
+        let currentLevel = 1;
+        let levels = [];
+        let goalAchieved = false;
+
+        // Level Configuration
+        levels = [{
+            objective: "Get the ball to the target area",
+            objects: [{
+                type: 'ball',
+                x: 100,
+                y: 100,
+                color: '#e74c3c'
+            }, {
+                type: 'target',
+                x: 600,
+                y: 400,
+                width: 60,
+                height: 60
+            }]
+        }, {
+            objective: "Balance the box on the platform",
+            objects: [{
+                type: 'box',
+                x: 400,
+                y: 100,
+                width: 80,
+                height: 80
+            }, {
+                type: 'platform',
+                x: 400,
+                y: 500,
+                width: 200,
+                height: 20
+            }]
+        }];
+
+        function init() {
+            // Setup Matter.js
+            engine = Engine.create();
+            render = Render.create({
+                canvas: document.getElementById('canvas'),
+                engine: engine,
+                options: {
+                    width: window.innerWidth,
+                    height: window.innerHeight,
+                    wireframes: false
+                }
+            });
+
+            // Add walls
+            World.add(engine.world, [
+                Bodies.rectangle(400, -10, 800, 20, {
+                    isStatic: true
+                }),
+                Bodies.rectangle(-10, 300, 20, 600, {
+                    isStatic: true
+                }),
+                Bodies.rectangle(810, 300, 20, 600, {
+                    isStatic: true
+                }),
+                Bodies.rectangle(400, 610, 800, 20, {
+                    isStatic: true
+                })
+            ]);
+
+            // Load first level
+            loadLevel(currentLevel);
+
+            // Run the engine
+            Engine.run(engine);
+            Render.run(render);
+
+            // Add event listeners
+            setupDrawing();
+            setupCollisions();
+        }
+
+        function loadLevel(levelNumber) {
+            goalAchieved = false;
+            Composite.clear(engine.world);
+            document.getElementById('currentLevel').textContent = levelNumber;
+            document.getElementById('objective').textContent =
+                levels[levelNumber - 1].objective;
+
+            // Add level objects
+            levels[levelNumber - 1].objects.forEach(obj => {
+                switch (obj.type) {
+                    case 'ball':
+                        World.add(engine.world, Bodies.circle(
+                            obj.x, obj.y, 20, {
+                                restitution: 0.8,
+                                render: {
+                                    fillStyle: obj.color
+                                }
+                            }
+                        ));
+                        break;
+                    case 'target':
+                        const target = Bodies.rectangle(
+                            obj.x, obj.y, obj.width, obj.height, {
+                                isStatic: true,
+                                isSensor: true,
+                                render: {
+                                    fillStyle: '#2ecc71',
+                                    opacity: 0.5
+                                }
+                            }
+                        );
+                        target.label = 'target';
+                        World.add(engine.world, target);
+                        break;
+                    case 'platform':
+                        World.add(engine.world, Bodies.rectangle(
+                            obj.x, obj.y, obj.width, obj.height, {
+                                isStatic: true,
+                                render: {
+                                    fillStyle: '#95a5a6'
+                                }
+                            }
+                        ));
+                        break;
+                }
+            });
+        }
+
+        function setupDrawing() {
+            const canvas = render.canvas;
+
+            canvas.addEventListener('mousedown', e => {
+                isDrawing = true;
+                currentPath = [{
+                    x: e.offsetX,
+                    y: e.offsetY
+                }];
+                document.getElementById('drawSound').play();
+            });
+
+            canvas.addEventListener('mousemove', e => {
+                if (isDrawing) {
+                    currentPath.push({
+                        x: e.offsetX,
+                        y: e.offsetY
+                    });
+                    drawCurrentPath();
+                }
+            });
+
+            canvas.addEventListener('mouseup', () => finalizeDrawing());
+        }
+
+        function drawCurrentPath() {
+            const ctx = render.context;
+            ctx.beginPath();
+            ctx.moveTo(currentPath[0].x, currentPath[0].y);
+
+            currentPath.forEach(point => {
+                ctx.lineTo(point.x, point.y);
+            });
+
+            ctx.strokeStyle = '#3498db';
+            ctx.lineWidth = 4;
+            ctx.stroke();
+        }
+
+        function finalizeDrawing() {
+            if (!isDrawing) return;
+            isDrawing = false;
+
+            const vertices = currentPath.map(point => ({
+                x: point.x,
+                y: point.y
+            }));
+
+            const drawing = Bodies.fromVertices(
+                vertices[0].x, vertices[0].y, [vertices], {
+                    render: {
+                        fillStyle: '#3498db',
+                        strokeStyle: '#2980b9',
+                        lineWidth: 2
+                    },
+                    friction: 0.1,
+                    restitution: 0.3
+                }
+            );
+
+            World.add(engine.world, drawing);
+            currentPath = [];
+        }
+
+        function setupCollisions() {
+            Events.on(engine, 'collisionStart', event => {
+                event.pairs.forEach(pair => {
+                    if ((pair.bodyA.label === 'target' ||
+                            pair.bodyB.label === 'target') && !goalAchieved) {
+                        goalAchieved = true;
+                        document.getElementById('successSound').play();
+                        setTimeout(() => {
+                            alert('Level Complete!');
+                            nextLevel();
+                        }, 1000);
+                    }
+                });
+            });
+        }
+
+        function clearDrawing() {
+            Composite.clear(engine.world);
+            loadLevel(currentLevel);
+        }
+
+        function resetLevel() {
+            clearDrawing();
+            goalAchieved = false;
+        }
+
+        function nextLevel() {
+            if (currentLevel < levels.length) {
+                currentLevel++;
+                loadLevel(currentLevel);
+            } else {
+                alert('All levels completed!');
+            }
+        }
+
+        // Initialize game
+        init();
+
+        // Window resize handler
+        window.addEventListener('resize', () => {
+            render.canvas.width = window.innerWidth;
+            render.canvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+
+</html>
