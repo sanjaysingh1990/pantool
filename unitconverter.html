@@ -1,0 +1,375 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Neuromorphic Unit Converters</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: #e0e0e0;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            padding: 20px;
+        }
+        
+        .container {
+            background: #e0e0e0;
+            border-radius: 20px;
+            padding: 30px;
+            margin: 20px;
+            box-shadow: 20px 20px 60px #bebebe, -20px -20px 60px #ffffff;
+        }
+        
+        .converter-box {
+            background: #e0e0e0;
+            border-radius: 15px;
+            padding: 20px;
+            margin: 15px 0;
+            box-shadow: inset 5px 5px 10px #bebebe, inset -5px -5px 10px #ffffff;
+        }
+        
+        h1 {
+            color: #4a4a4a;
+            text-align: center;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.1);
+        }
+        
+        .converter-group {
+            margin: 15px 0;
+        }
+        
+        input,
+        select {
+            background: #e0e0e0;
+            border: none;
+            border-radius: 10px;
+            padding: 12px;
+            margin: 8px;
+            box-shadow: inset 3px 3px 6px #bebebe, inset -3px -3px 6px #ffffff;
+            font-size: 16px;
+            color: #4a4a4a;
+        }
+        
+        button {
+            background: #e0e0e0;
+            border: none;
+            border-radius: 10px;
+            padding: 12px 24px;
+            margin: 8px;
+            box-shadow: 5px 5px 10px #bebebe, -5px -5px 10px #ffffff;
+            font-size: 16px;
+            color: #4a4a4a;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        
+        button:active {
+            box-shadow: inset 5px 5px 10px #bebebe, inset -5px -5px 10px #ffffff;
+        }
+        
+        .result {
+            font-size: 18px;
+            color: #4a4a4a;
+            padding: 10px;
+            margin: 10px 0;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="container">
+        <h1>Neuro Unit Converters</h1>
+
+        <!-- Length Converter -->
+        <div class="converter-box">
+            <h2>Length Converter</h2>
+            <div class="converter-group">
+                <input type="number" id="lengthInput" placeholder="Enter value">
+                <select id="lengthFrom">
+                    <option value="m">Meters</option>
+                    <option value="km">Kilometers</option>
+                    <option value="mi">Miles</option>
+                    <option value="ft">Feet</option>
+                    <option value="in">Inches</option>
+                </select> to
+                <select id="lengthTo">
+                    <option value="m">Meters</option>
+                    <option value="km">Kilometers</option>
+                    <option value="mi">Miles</option>
+                    <option value="ft">Feet</option>
+                    <option value="in">Inches</option>
+                </select>
+                <button onclick="convertLength()">Convert</button>
+                <button onclick="resetConverter('length')">Reset</button>
+                <div class="result" id="lengthResult"></div>
+            </div>
+        </div>
+
+        <!-- Weight Converter -->
+        <div class="converter-box">
+            <h2>Weight Converter</h2>
+            <div class="converter-group">
+                <input type="number" id="weightInput" placeholder="Enter value">
+                <select id="weightFrom">
+                    <option value="kg">Kilograms</option>
+                    <option value="g">Grams</option>
+                    <option value="lb">Pounds</option>
+                    <option value="oz">Ounces</option>
+                </select> to
+                <select id="weightTo">
+                    <option value="kg">Kilograms</option>
+                    <option value="g">Grams</option>
+                    <option value="lb">Pounds</option>
+                    <option value="oz">Ounces</option>
+                </select>
+                <button onclick="convertWeight()">Convert</button>
+                <button onclick="resetConverter('weight')">Reset</button>
+                <div class="result" id="weightResult"></div>
+            </div>
+        </div>
+
+        <!-- Temperature Converter -->
+        <div class="converter-box">
+            <h2>Temperature Converter</h2>
+            <div class="converter-group">
+                <input type="number" id="tempInput" placeholder="Enter value">
+                <select id="tempFrom">
+                    <option value="C">Celsius</option>
+                    <option value="F">Fahrenheit</option>
+                    <option value="K">Kelvin</option>
+                </select> to
+                <select id="tempTo">
+                    <option value="C">Celsius</option>
+                    <option value="F">Fahrenheit</option>
+                    <option value="K">Kelvin</option>
+                </select>
+                <button onclick="convertTemp()">Convert</button>
+                <button onclick="resetConverter('temp')">Reset</button>
+                <div class="result" id="tempResult"></div>
+            </div>
+        </div>
+
+        <!-- Length/Distance Converter -->
+        <div class="converter-box">
+            <h2>Length/Distance</h2>
+            <div class="converter-group">
+                <input type="number" id="lengthInput" placeholder="Enter value">
+                <select id="lengthFrom">
+                    <option value="m">Meters</option>
+                    <option value="km">Kilometers</option>
+                    <option value="cm">Centimeters</option>
+                    <option value="mm">Millimeters</option>
+                    <option value="mi">Miles</option>
+                    <option value="yd">Yards</option>
+                    <!-- Add more units -->
+                </select> to
+                <select id="lengthTo">
+                    <!-- Same options as lengthFrom -->
+                </select>
+                <button onclick="convert('length')">Convert</button>
+                <div class="result" id="lengthResult"></div>
+            </div>
+        </div>
+
+        <!-- Digital Storage -->
+        <div class="converter-box">
+            <h2>Digital Storage</h2>
+            <div class="converter-group">
+                <input type="number" id="digitalInput" placeholder="Enter value">
+                <select id="digitalFrom">
+                    <option value="B">Bytes</option>
+                    <option value="KB">Kilobytes</option>
+                    <option value="MB">Megabytes</option>
+                    <!-- Add more units -->
+                </select> to
+                <select id="digitalTo">
+                    <!-- Same options as digitalFrom -->
+                </select>
+                <button onclick="convert('digital')">Convert</button>
+                <div class="result" id="digitalResult"></div>
+            </div>
+        </div>
+
+        <!-- Currency Converter -->
+        <div class="converter-box">
+            <h2>Currency</h2>
+            <div class="converter-group">
+                <input type="number" id="currencyInput" placeholder="Enter value">
+                <select id="currencyFrom">
+                    <option value="USD">US Dollar</option>
+                    <option value="EUR">Euro</option>
+                    <option value="GBP">British Pound</option>
+                    <!-- Add more currencies -->
+                </select> to
+                <select id="currencyTo">
+                    <!-- Same options as currencyFrom -->
+                </select>
+                <button onclick="convertCurrency()">Convert</button>
+                <div class="result" id="currencyResult"></div>
+            </div>
+        </div>
+
+
+        <!-- Add more converters here following the same pattern -->
+    </div>
+
+    <script>
+        // Length Conversion
+        function convertLength() {
+            const input = parseFloat(document.getElementById('lengthInput').value);
+            const from = document.getElementById('lengthFrom').value;
+            const to = document.getElementById('lengthTo').value;
+            let result;
+
+            const conversions = {
+                m: 1,
+                km: 1000,
+                mi: 1609.34,
+                ft: 0.3048,
+                in: 0.0254
+            };
+
+            result = input * conversions[from] / conversions[to];
+            document.getElementById('lengthResult').innerHTML = `${input} ${from} = ${result.toFixed(4)} ${to}`;
+        }
+
+        // Weight Conversion
+        function convertWeight() {
+            const input = parseFloat(document.getElementById('weightInput').value);
+            const from = document.getElementById('weightFrom').value;
+            const to = document.getElementById('weightTo').value;
+            let result;
+
+            const conversions = {
+                kg: 1,
+                g: 0.001,
+                lb: 0.453592,
+                oz: 0.0283495
+            };
+
+            result = input * conversions[from] / conversions[to];
+            document.getElementById('weightResult').innerHTML = `${input} ${from} = ${result.toFixed(4)} ${to}`;
+        }
+
+        // Temperature Conversion
+        function convertTemp() {
+            const input = parseFloat(document.getElementById('tempInput').value);
+            const from = document.getElementById('tempFrom').value;
+            const to = document.getElementById('tempTo').value;
+            let result;
+
+            if (from === 'C') {
+                if (to === 'F') result = (input * 9 / 5) + 32;
+                else if (to === 'K') result = input + 273.15;
+                else result = input;
+            } else if (from === 'F') {
+                if (to === 'C') result = (input - 32) * 5 / 9;
+                else if (to === 'K') result = (input - 32) * 5 / 9 + 273.15;
+                else result = input;
+            } else if (from === 'K') {
+                if (to === 'C') result = input - 273.15;
+                else if (to === 'F') result = (input - 273.15) * 9 / 5 + 32;
+                else result = input;
+            }
+
+            document.getElementById('tempResult').innerHTML = `${input}°${from} = ${result.toFixed(2)}°${to}`;
+        }
+
+        // Reset Function
+        function resetConverter(type) {
+            document.getElementById(`${type}Input`).value = '';
+            document.getElementById(`${type}Result`).innerHTML = '';
+        }
+
+        // Unified conversion factors
+        const conversionTables = {
+            length: {
+                m: 1,
+                km: 1000,
+                cm: 0.01,
+                mm: 0.001,
+                mi: 1609.34,
+                yd: 0.9144,
+                ft: 0.3048,
+                in: 0.0254,
+                nmi: 1852,
+                au: 1.496e+11,
+                ly: 9.461e+15,
+                parsec: 3.086e+16
+            },
+            digital: {
+                B: 1,
+                KB: 1024,
+                MB: 1024 ** 2,
+                GB: 1024 ** 3,
+                TB: 1024 ** 4
+            },
+            temperature: {
+                C: {
+                    convert: (v, to) => {
+                        if (to === 'F') return v * 9 / 5 + 32;
+                        if (to === 'K') return v + 273.15;
+                        return v;
+                    }
+                },
+                F: {
+                    convert: (v, to) => {
+                        if (to === 'C') return (v - 32) * 5 / 9;
+                        if (to === 'K') return (v - 32) * 5 / 9 + 273.15;
+                        return v;
+                    }
+                },
+                K: {
+                    convert: (v, to) => {
+                        if (to === 'C') return v - 273.15;
+                        if (to === 'F') return (v - 273.15) * 9 / 5 + 32;
+                        return v;
+                    }
+                }
+            }
+        };
+
+        function convert(type) {
+            const input = parseFloat(document.getElementById(`${type}Input`).value);
+            const from = document.getElementById(`${type}From`).value;
+            const to = document.getElementById(`${type}To`).value;
+
+            if (type === 'temperature') {
+                const result = conversionTables[type][from].convert(input, to);
+                document.getElementById(`${type}Result`).innerHTML =
+                    `${input}°${from} = ${result.toFixed(2)}°${to}`;
+            } else {
+                const factor = conversionTables[type][from] / conversionTables[type][to];
+                const result = input * factor;
+                document.getElementById(`${type}Result`).innerHTML =
+                    `${input} ${from} = ${result.toFixed(4)} ${to}`;
+            }
+        }
+
+        // Currency converter using API (needs implementation)
+        async function convertCurrency() {
+            const from = document.getElementById('currencyFrom').value;
+            const to = document.getElementById('currencyTo').value;
+            const amount = document.getElementById('currencyInput').value;
+
+            // You would need to implement actual API call here
+            const response = await fetch(`https://api.exchangerate-api.com/v4/latest/${from}`);
+            const data = await response.json();
+            const rate = data.rates[to];
+            const result = amount * rate;
+
+            document.getElementById('currencyResult').innerHTML =
+                `${amount} ${from} = ${result.toFixed(2)} ${to}`;
+        }
+
+
+        // Add more conversion functions as needed
+    </script>
+</body>
+
+</html>

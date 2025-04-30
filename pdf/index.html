@@ -1,0 +1,107 @@
+<!-- index.html -->
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PDF Operations</title>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://unpkg.com/pdf-lib@1.17.1/dist/pdf-lib.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/FileSaver.js/2.0.0/FileSaver.min.js"></script>
+</head>
+
+<body>
+    <div class="container">
+        <h1>PDF Operations</h1>
+
+        <!-- File Upload Section -->
+        <div class="section">
+            <h2>Upload PDF Files</h2>
+            <input type="file" id="pdfInput" accept=".pdf" multiple>
+            <div id="fileList"></div>
+        </div>
+
+        <!-- Operations Section -->
+        <div class="section">
+            <h2>Operations</h2>
+            <h2>Create PDF with Rich Text</h2>
+            <div class="editor-toolbar">
+                <select id="fontFamily" onchange="formatText('fontName', this.value)">
+                    <option value="Helvetica">Helvetica</option>
+                    <option value="Times-Roman">Times New Roman</option>
+                    <option value="Courier">Courier</option>
+                </select>
+
+                <select id="fontSize" onchange="formatText('fontSize', this.value)">
+                    <option value="10">10</option>
+                    <option value="12">12</option>
+                    <option value="14">14</option>
+                    <option value="18">18</option>
+                    <option value="24">24</option>
+                </select>
+
+                <button onclick="formatText('bold')"><strong>B</strong></button>
+                <button onclick="formatText('italic')"><em>I</em></button>
+                <button onclick="formatText('underline')"><u>U</u></button>
+                <input type="color" onchange="formatText('foreColor', this.value)">
+                <button onclick="formatText('justifyLeft')">⇤</button>
+                <button onclick="formatText('justifyCenter')">↔</button>
+                <button onclick="formatText('justifyRight')">⇥</button>
+                <button onclick="formatText('insertUnorderedList')">• List</button>
+            </div>
+
+            <div id="editor" contenteditable="true" class="rich-text-editor"></div>
+            <button onclick="createPDF()">Create New PDF</button>
+            <button onclick="mergePDFs()">Merge PDFs</button>
+            <button onclick="splitPDF()">Split PDF</button>
+            <h2>Advanced Options</h2>
+
+            <!-- Page Selection -->
+            <div class="option-group">
+                <label>Pages to Split (e.g., 1-3,5): </label>
+                <input type="text" id="pageRange" placeholder="All pages">
+            </div>
+
+            <!-- Rotation -->
+            <div class="option-group">
+                <label>Rotation: </label>
+                <button onclick="rotatePDF(-90)">↺ Left</button>
+                <button onclick="rotatePDF(90)">↻ Right</button>
+            </div>
+
+            <!-- Watermark -->
+            <div class="option-group">
+                <label>Watermark Text: </label>
+                <input type="text" id="watermarkText" placeholder="Enter watermark">
+                <button onclick="addWatermark()">Add Watermark</button>
+            </div>
+
+            <!-- Metadata -->
+            <div class="option-group">
+                <label>Title: </label>
+                <input type="text" id="docTitle">
+                <label>Author: </label>
+                <input type="text" id="docAuthor">
+            </div>
+
+            <!-- Password Protection -->
+            <div class="option-group">
+                <label>Password: </label>
+                <input type="password" id="pdfPassword">
+                <button onclick="passwordProtect()">Protect PDF</button>
+            </div>
+
+        </div>
+
+        <!-- Result Section -->
+        <div class="section">
+            <h2>Result</h2>
+            <div id="result"></div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+
+</html>
