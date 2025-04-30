@@ -133,3 +133,78 @@ label {
 .create-btn {
     background-color: #2196F3 !important;
 }
+
+
+/* Ad Containers */
+
+.ad-container {
+    position: fixed;
+    z-index: 1000;
+    background: white;
+    padding: 10px;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.left-ad {
+    left: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 160px;
+}
+
+.right-ad {
+    right: 0;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 160px;
+}
+
+.bottom-ad {
+    bottom: 0;
+    left: 0;
+    right: 0;
+    width: 100%;
+    height: auto;
+}
+
+
+/* Adjust main container for ads */
+
+
+/* SEO Footer */
+
+.seo-footer {
+    background: #f8f9fa;
+    padding: 30px 0;
+    margin-top: 40px;
+    border-top: 1px solid #ddd;
+}
+
+.footer-content {
+    max-width: 800px;
+    margin: 0 auto;
+    text-align: center;
+}
+
+.keywords {
+    margin-top: 20px;
+    color: #666;
+    font-size: 0.9em;
+}
+
+.keywords span {
+    margin: 0 5px;
+}
+
+
+/* Responsive Ads */
+
+@media (max-width: 1200px) {
+    .left-ad,
+    .right-ad {
+        display: none;
+    }
+    .container {
+        margin: 0 20px;
+    }
+}
